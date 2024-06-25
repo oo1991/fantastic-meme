@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
+from datetime import datetime
 
 def get_fear_and_greed_index():
     # Set up the Selenium WebDriver
@@ -21,9 +22,10 @@ def get_fear_and_greed_index():
         fng_index = fng_element.text
         print(f"Fear & Greed Index: {fng_index}")
         
-        # Save the index to a file
+        # Save the index to a file with a timestamp to ensure it's always updated
         with open("fear_and_greed_index.txt", "w") as file:
             file.write(f"Fear & Greed Index: {fng_index}\n")
+            file.write(f"Updated at: {datetime.utcnow().isoformat()}Z\n")
     except Exception as e:
         print(f"Error: {e}")
     finally:
