@@ -23,3 +23,13 @@ jobs:
 
     - name: Run the script
       run: python get_fear.py
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add fear_and_greed_index.txt
+        git commit -m "Update Fear & Greed Index"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
