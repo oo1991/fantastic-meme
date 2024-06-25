@@ -30,6 +30,18 @@ jobs:
     - name: Display content for debugging
       run: cat fear_and_greed_index.txt
 
+    - name: Print environment variables
+      run: env
+
+    - name: Check git version
+      run: git --version
+
+    - name: Show git config
+      run: git config --list
+
+    - name: Show current directory
+      run: pwd
+
     - name: Commit and push changes
       env:
         GH_PAT: ${{ secrets.GH_PAT }}
