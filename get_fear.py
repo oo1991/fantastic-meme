@@ -18,7 +18,7 @@ def get_fear_and_greed_index():
     driver.implicitly_wait(10)  # Wait for up to 10 seconds for elements to be found
 
     try:
-        fng_element = driver.find_element(By.XPATH, "//p[@class='sc-b7c6dde0-0 hbyBrk kwaTsJ']")
+        fng_element = driver.find_element(By.XPATH, "//p[@class='sc-b7cd6de0-0 sc-ee1f942b-1 hDybRk kwaTsJ']")
         fng_index = fng_element.text
         print(f"Fear & Greed Index: {fng_index}")
         
