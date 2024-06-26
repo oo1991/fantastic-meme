@@ -1,7 +1,9 @@
-name: Manual Test Fetch Fear and Greed Index
+name: Manual and Scheduled Test Fetch Fear and Greed Index
 
 on:
   workflow_dispatch:  # Allows the workflow to be triggered manually
+  schedule:
+    - cron: '0 4 * * *'  # Runs at 4 AM UTC every day
 
 jobs:
   fetch_index:
