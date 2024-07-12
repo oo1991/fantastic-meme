@@ -1,3 +1,3 @@
-Scan Time: 2024-07-11T04:18:39.305739Z
+Scan Time: 2024-07-12T04:16:04.876717Z
 CoinMarketCap Fear & Greed Index: 40
-CryptoRank Fear & Greed Index: 29
+CryptoRank Fear & Greed Index: 25
