@@ -1,4 +1,4 @@
-name: Manual and Scheduled Test Fetch Fear and Greed Index
+name: Fear and Greed Index
 
 on:
   workflow_dispatch:  # Allows the workflow to be triggered manually
