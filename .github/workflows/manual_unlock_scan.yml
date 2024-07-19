@@ -1,7 +1,9 @@
-name: Manual Unlock Scan
+name: Manual and Scheduled Unlock Scan
 
 on:
   workflow_dispatch:  # Allows the workflow to be triggered manually
+  schedule:
+    - cron: '0 4 */3 * *'  # Runs at 4 AM UTC every 3 days
 
 jobs:
   manual_unlock_scan:
@@ -22,7 +24,7 @@ jobs:
         pip install selenium webdriver-manager beautifulsoup4 requests
 
     - name: Run unlock_scan
-      run: python -c "from unlock_scan import unlock_scan; unlock_scan()"
+      run: python -c "from your_script_name import unlock_scan; unlock_scan()"
 
     - name: Display content for debugging
       run: cat token_unlocks.txt
