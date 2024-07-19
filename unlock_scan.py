@@ -22,7 +22,7 @@ def get_projects(html):
     
     return result
 
-def get_date(html, project):
+def get_date(html, project, offset_hours=3):
     soup = BeautifulSoup(html, 'html.parser')
 
     tags = soup.find_all('div', {'class': 'mb-[16px] flex items-center justify-between'})
@@ -30,10 +30,14 @@ def get_date(html, project):
     year = tags[-1].find_all('p')[-1].text
     month = tags[-1].find_all('p')[-2].text
     day = tags[-1].find_all('p')[-3].text
-    time = tags[-1].find_all('div')[1].find('p').text
+    time_str = tags[-1].find_all('div')[1].find('p').text
 
-    dtt = f"{day} {month} {year} {time.replace(' : ', ':')}"
-    return project, dtt
+    utc_time_str = f"{day} {month} {year} {time_str.replace(' : ', ':')} UTC"
+    utc_time = datetime.strptime(utc_time_str, "%d %b %y %I:%M %p %Z")
+    local_time = utc_time + timedelta(hours=offset_hours)
+    local_time_str = local_time.strftime("%d %b %y %I:%M %p %Z")
+
+    return project, local_time_str
 
 def extract_token_unlock_data(html):
     soup = BeautifulSoup(html, 'html.parser')
