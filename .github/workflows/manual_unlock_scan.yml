@@ -24,7 +24,7 @@ jobs:
         pip install selenium webdriver-manager beautifulsoup4 requests
 
     - name: Run unlock_scan
-      run: python -c "from your_script_name import unlock_scan; unlock_scan()"
+      run: python -c "from unlock_scan import unlock_scan; unlock_scan()"
 
     - name: Display content for debugging
       run: cat token_unlocks.txt
