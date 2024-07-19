@@ -33,9 +33,10 @@ def get_date(html, project, offset_hours=3):
     time_str = tags[-1].find_all('div')[1].find('p').text
 
     utc_time_str = f"{day} {month} {year} {time_str.replace(' : ', ':')} UTC"
-    utc_time = datetime.strptime(utc_time_str, "%d %b %y %I:%M %p %Z")
+    utc_time_str = utc_time_str.replace(" UTC", "")  # Remove ' UTC' for parsing
+    utc_time = datetime.strptime(utc_time_str, "%d %b %y %I:%M %p")
     local_time = utc_time + timedelta(hours=offset_hours)
-    local_time_str = local_time.strftime("%d %b %y %I:%M %p %Z")
+    local_time_str = local_time.strftime("%d %b %y %I:%M %p")
 
     return project, local_time_str
 
