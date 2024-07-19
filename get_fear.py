@@ -1,3 +1,5 @@
+import requests
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
@@ -5,18 +7,15 @@ from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime
 
 def get_fear_and_greed_index_coinmarketcap():
-    # Set up the Selenium WebDriver
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')  # Run in headless mode (no GUI)
+    options.add_argument('--headless')
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-
-    # Navigate to CoinMarketCap
+    
     url = "https://coinmarketcap.com/"
     driver.get(url)
-
-    # Wait for the page to load and locate the Fear & Greed Index element
-    driver.implicitly_wait(10)  # Wait for up to 10 seconds for elements to be found
-
+    
+    driver.implicitly_wait(10)
+    
     try:
         fng_element = driver.find_element(By.XPATH, "//span[contains(@class, 'sc-d1ede7e3-0 cbgGwO base-text')]")
         fng_index = fng_element.text
@@ -28,20 +27,16 @@ def get_fear_and_greed_index_coinmarketcap():
         driver.quit()
 
 def get_fear_and_greed_index_cryptorank():
-    # Set up the Selenium WebDriver
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')  # Run in headless mode (no GUI)
+    options.add_argument('--headless')
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-
-    # Navigate to CryptoRank.io
+    
     url = "https://cryptorank.io/"
     driver.get(url)
-
-    # Wait for the page to load and locate the Fear & Greed Index element
-    driver.implicitly_wait(10)  # Wait for up to 10 seconds for elements to be found
-
+    
+    driver.implicitly_wait(10)
+    
     try:
-        # Locate the Fear & Greed Index element using the appropriate class or tag
         fng_element = driver.find_element(By.XPATH, "//p[@class='sc-b7cd6de0-0 sc-ee1f942b-1 hDybRk kwaTsJ']")
         fng_index = fng_element.text
         return fng_index
@@ -51,9 +46,28 @@ def get_fear_and_greed_index_cryptorank():
     finally:
         driver.quit()
 
+def get_altcoin_season_index(url: str = "https://www.blockchaincenter.net/en/altcoin-season-index/") -> str:
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        index_div = soup.find('div', style=lambda value: value and 'font-size:88px' in value)
+
+        if index_div:
+            altcoin_index = index_div.text.strip()
+            return altcoin_index
+        else:
+            return "Could not find the Altcoin Season Index on the page. The structure of the page might have changed."
+
+    except requests.exceptions.RequestException as e:
+        return f"An error occurred while fetching the Altcoin Season Index: {e}"
+
 def save_fear_and_greed_indices():
     coinmarketcap_index = get_fear_and_greed_index_coinmarketcap()
     cryptorank_index = get_fear_and_greed_index_cryptorank()
+    altcoin_index = get_altcoin_season_index()
     scan_time = datetime.utcnow().isoformat() + "Z"
 
     with open("fear_and_greed_index.txt", "w") as file:
@@ -67,6 +81,11 @@ def save_fear_and_greed_indices():
             file.write(f"CryptoRank Fear & Greed Index: {cryptorank_index}\n")
         else:
             file.write("CryptoRank Fear & Greed Index: Error fetching data\n")
+        
+        if "An error occurred" not in altcoin_index:
+            file.write(f"Altcoin Season Index: {altcoin_index}\n")
+        else:
+            file.write("Altcoin Season Index: Error fetching data\n")
 
 if __name__ == "__main__":
     save_fear_and_greed_indices()
