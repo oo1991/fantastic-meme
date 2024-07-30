@@ -1,4 +1,4 @@
-Scan Time: 2024-07-29T04:16:48.722199Z
-CoinMarketCap Fear & Greed Index: 63
-CryptoRank Fear & Greed Index: 74
-Altcoin Season Index: 20
+Scan Time: 2024-07-30T04:16:30.379643Z
+CoinMarketCap Fear & Greed Index: 61
+CryptoRank Fear & Greed Index: 67
+Altcoin Season Index: 18
