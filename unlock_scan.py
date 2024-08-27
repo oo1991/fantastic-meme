@@ -106,6 +106,7 @@ class Unlock:
 
         page = browser.get_page()
         projects = get_projects(page)
+        print('Projects: ', projects)
 
         tokens = {}
 
