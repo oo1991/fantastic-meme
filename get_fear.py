@@ -37,7 +37,7 @@ def get_fear_and_greed_index_cryptorank():
     driver.implicitly_wait(10)
     
     try:
-        fng_element = driver.find_element(By.XPATH, "//p[@class='sc-b7cd6de0-0 sc-ee1f942b-1 hDybRk kwaTsJ']")
+        fng_element = driver.find_element(By.XPATH, "//p[@class='sc-56567222-0 sc-ee1f942b-1 fzulHc kwaTsJ']")
         fng_index = fng_element.text
         return fng_index
     except Exception as e:
