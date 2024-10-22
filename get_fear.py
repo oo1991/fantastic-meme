@@ -39,6 +39,7 @@ def get_fear_and_greed_index_coinmarketcap():
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')  # Run browser in headless mode
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    driver.implicitly_wait(10)
     
     url = "https://coinmarketcap.com/"
     driver.get(url)
