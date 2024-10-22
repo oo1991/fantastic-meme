@@ -14,14 +14,15 @@ def get_fear_and_greed_index_coinmarketcap():
     url = "https://coinmarketcap.com/"
     driver.get(url)
     
-    driver.implicitly_wait(10)
-    
     try:
-        fng_element = driver.find_element(By.XPATH, "//div[@class='FearAndGreedCard_score__8bXjA']")
+        # Explicit wait for the Fear and Greed index element
+        fng_element = WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.XPATH, "//div[@class='FearAndGreedCard_score__8bXjA']"))
+        )
         fng_index = fng_element.text
         return fng_index
     except Exception as e:
-        print(f"Error fetching from CoinMarketCap: {e}")
+        logging.error(f"Error fetching Fear and Greed index from CoinMarketCap: {e}")
         return None
     finally:
         driver.quit()
