@@ -1,4 +1,4 @@
-Scan Time: 2024-10-22T13:51:26.490571Z
-CoinMarketCap Fear & Greed Index: Error fetching data
+Scan Time: 2024-10-22T13:54:54.606121Z
+CoinMarketCap Fear & Greed Index: 57
 CryptoRank Fear & Greed Index: 70
 Altcoin Season Index: 29
