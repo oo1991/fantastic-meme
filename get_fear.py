@@ -17,7 +17,7 @@ def get_fear_and_greed_index_coinmarketcap():
     driver.implicitly_wait(10)
     
     try:
-        fng_element = driver.find_element(By.XPATH, "//span[contains(@class, 'FearAndGreedCard_score__8bXjA')]")
+        fng_element = driver.find_element(By.XPATH, "//div[@class='FearAndGreedCard_score__8bXjA']")
         fng_index = fng_element.text
         return fng_index
     except Exception as e:
