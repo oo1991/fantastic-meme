@@ -38,6 +38,9 @@ def get_fear_and_greed_index_coinmarketcap():
     """
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')  # Run browser in headless mode
+    options.add_argument('--disable-gpu')  # Disable GPU acceleration
+    options.add_argument('--no-sandbox')  # Bypass OS security model
+    options.add_argument('--window-size=1920,1080')  # Set window size
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     driver.implicitly_wait(20)
     
