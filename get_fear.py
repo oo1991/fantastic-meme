@@ -13,20 +13,41 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import logging
 
+def get_fear_and_greed_index_from_page(html_content):
+    """
+    Extract the Fear and Greed index from the given HTML content.
+    """
+    soup = BeautifulSoup(html_content, 'html.parser')
+
+    try:
+        # Find the div containing the Fear and Greed index score
+        fng_element = soup.find("div", class_="FearAndGreedCard_score__8bXjA")
+        if fng_element:
+            fng_index = fng_element.text.strip()
+            return fng_index
+        else:
+            raise ValueError("Fear and Greed index element not found")
+    except Exception as e:
+        print(f"Error extracting Fear and Greed index: {e}")
+        return None
+
 def get_fear_and_greed_index_coinmarketcap():
+    """
+    Load the CoinMarketCap webpage and extract the Fear and Greed index.
+    """
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
+    options.add_argument('--headless')  # Run browser in headless mode
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
     
     url = "https://coinmarketcap.com/"
     driver.get(url)
     
     try:
-        # Explicit wait for the Fear and Greed index element
-        fng_element = WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.XPATH, "//div[@class='FearAndGreedCard_score__8bXjA']"))
-        )
-        fng_index = fng_element.text
+        # Get the full page source
+        html_content = driver.page_source
+        
+        # Use the previously defined function to extract the Fear and Greed index from the page source
+        fng_index = get_fear_and_greed_index_from_page(html_content)
         return fng_index
     except Exception as e:
         logging.error(f"Error fetching Fear and Greed index from CoinMarketCap: {e}")
