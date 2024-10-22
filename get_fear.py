@@ -47,6 +47,7 @@ def get_fear_and_greed_index_coinmarketcap():
     try:
         # Get the full page source
         html_content = driver.page_source
+        print(html_content)
         
         # Use the previously defined function to extract the Fear and Greed index from the page source
         fng_index = get_fear_and_greed_index_from_page(html_content)
