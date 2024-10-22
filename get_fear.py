@@ -12,6 +12,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import logging
+import time
 
 def get_fear_and_greed_index_from_page(html_content):
     """
@@ -41,6 +42,7 @@ def get_fear_and_greed_index_coinmarketcap():
     
     url = "https://coinmarketcap.com/"
     driver.get(url)
+    time.sleep(10)
     
     try:
         # Get the full page source
