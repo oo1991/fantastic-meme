@@ -42,12 +42,21 @@ def get_fear_and_greed_index_coinmarketcap():
     
     url = "https://coinmarketcap.com/"
     driver.get(url)
-    time.sleep(10)
-    
+
     try:
-        # Get the full page source
+        # Wait until the page has fully loaded by waiting for a significant element
+        WebDriverWait(driver, 20).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body"))  # Adjust this to a reliable element
+        )
+
+        # Allow some extra time for JavaScript-rendered content to load
+        time.sleep(5)
+
+        # Get the full page source after waiting for the element
         html_content = driver.page_source
-        print(html_content)
+        
+        # Print a portion of the page content for debugging
+        print(html_content)  # Prints the first 5000 characters of the page content
         
         # Use the previously defined function to extract the Fear and Greed index from the page source
         fng_index = get_fear_and_greed_index_from_page(html_content)
