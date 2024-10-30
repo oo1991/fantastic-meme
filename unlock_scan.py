@@ -13,11 +13,14 @@ def get_projects(html):
     result = []
 
     tags = soup.find_all('tr', {'class': 'group cursor-pointer border-b-[1px] border-background-secondary bg-background hover:bg-[#F6E8ED] dark:border-background-dark-secondary dark:bg-background-dark hover:dark:bg-[#351226]'})
-
+    print('TAGS size: ', len(tags))
     for tag in tags:
         td_tags = tag.find('td', {'class': 'bg-background group-hover:bg-[#F6E8ED] dark:bg-background-dark group-hover:dark:bg-[#351226] after:duration-300 after:transition-shadow after:absolute after:-bottom-px after:right-0 after:top-0 after:w-[20px] after:shadow-table-col-left desktop:after:shadow-none after:translate-x-full after:opacity-0'})
         link = td_tags.find('a')['href']
-        text = td_tags.find('p').text
+        print(link)
+        text = td_tags.find('div').find('div').text
+        print(text)
+        
         result.append([link, text])
     
     return result
@@ -27,16 +30,17 @@ def get_date(html, project, offset_hours=3):
 
     tags = soup.find_all('div', {'class': 'mb-[16px] flex items-center justify-between'})
 
-    year = tags[-1].find_all('p')[-1].text
-    month = tags[-1].find_all('p')[-2].text
-    day = tags[-1].find_all('p')[-3].text
-    time_str = tags[-1].find_all('div')[1].find('p').text
+    year = tags[-1].find_all('div', {'class': 'font-inter tracking-[-0.12px] text-[13px] leading-[16px] font-medium text-left'})[-3].text
+    month = tags[-1].find_all('div', {'class': 'font-inter tracking-[-0.12px] text-[13px] leading-[16px] font-medium text-left'})[-2].text
+    day = tags[-1].find_all('div', {'class': 'font-inter tracking-[-0.12px] text-[13px] leading-[16px] font-medium text-left'})[-1].text
+    time_str = tags[-1].find_all('div', {'class': 'font-inter tracking-[-0.12px] text-[13px] leading-[16px] font-medium text-left'})[0].text
 
     utc_time_str = f"{day} {month} {year} {time_str.replace(' : ', ':')} UTC"
     utc_time_str = utc_time_str.replace(" UTC", "")  # Remove ' UTC' for parsing
     utc_time = datetime.strptime(utc_time_str, "%d %b %y %I:%M %p")
     local_time = utc_time + timedelta(hours=offset_hours)
     local_time_str = local_time.strftime("%d %b %y %I:%M %p")
+    print(project, local_time_str)
 
     return project, local_time_str
 
@@ -101,7 +105,7 @@ class Unlock:
 
     def check(self):
         browser = ChromeBrowserN(1)
-        browser.load_page("https://token.unlocks.app/")
+        browser.load_page("https://tokenomist.ai/unlocks")
         time.sleep(3)
 
         page = browser.get_page()
@@ -111,7 +115,7 @@ class Unlock:
         tokens = {}
 
         for project in projects:
-            browser.load_page("https://token.unlocks.app" + project[0])
+            browser.load_page("https://tokenomist.ai" + project[0])
             time.sleep(5)
             page = browser.get_page()
             token, dtt = get_date(page, project[1])
