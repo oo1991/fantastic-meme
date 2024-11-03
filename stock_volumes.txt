@@ -20,6 +20,6 @@ SBUX CAP: $112.07B, Volume (last 24h): $8.86M
 BLK CAP: $145.92B, Volume (last 24h): $792000.00
 DPZ CAP: $14.70B, Volume (last 24h): $672700.00
 UBER CAP: $154.24B, Volume (last 24h): $33.53M
-MARA CAP: $4.94B, Volume (last 24h): $32.54M
+MARA CAP: $4.74B, Volume (last 24h): $32.54M
 RIOT CAP: $3.14B, Volume (last 24h): $23.13M
 COIN CAP: $45.78B, Volume (last 24h): $14.42M
