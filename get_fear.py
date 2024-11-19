@@ -14,6 +14,94 @@ from selenium.webdriver.support import expected_conditions as EC
 import logging
 import time
 
+def extract_active_spans(url: str, output_file: str) -> None:
+    """
+    Fetches the webpage at the specified URL, extracts <span> elements with the class 'active'
+    within the <div> that has classes 'legend' and 'mt-2', prints their text content, and
+    saves the results or any error messages to the specified output file.
+
+    Parameters:
+    - url (str): The URL of the webpage to fetch.
+    - output_file (str): The path to the file where results or error messages will be saved.
+    """
+    try:
+        # Optional: Define headers to mimic a real browser
+        headers = {
+            'User-Agent': (
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) '
+                'Chrome/58.0.3029.110 Safari/537.3'
+            )
+        }
+
+        # Send a GET request to the URL with headers
+        response = requests.get(url, headers=headers, timeout=10)  # Added timeout for better handling
+
+        # Raise an exception if the request was unsuccessful
+        response.raise_for_status()
+
+        # Parse the HTML content using BeautifulSoup
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find the <div> with classes "legend" and "mt-2"
+        target_div = soup.find('div', class_='legend mt-2')
+
+        if not target_div:
+            error_message = "The target <div> with class 'legend mt-2' was not found."
+            # Write the error message to the output file
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(error_message)
+            print(error_message)  # Optional: Also print the error to console
+            return  # Exit the function early
+
+        # Find all <span> elements with class "active" within the target <div>
+        active_spans = target_div.find_all('span', class_='active')
+
+        if not active_spans:
+            error_message = "No <span> elements with class 'active' were found within the target <div>."
+            # Write the error message to the output file
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(error_message)
+            print(error_message)  # Optional: Also print the error to console
+            return  # Exit the function early
+
+        # Open the file in write mode to save the results
+        with open(output_file, 'w', encoding='utf-8') as f:
+            # Iterate through each active <span> and write its text content to the file
+            for span in active_spans:
+                span_text = span.get_text(strip=True)
+                print(span_text)  # Print to console
+                f.write(span_text + '\n')  # Write to file
+
+    except requests.exceptions.HTTPError as http_err:
+        error_message = f"HTTP error occurred: {http_err}"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(error_message)
+        print(error_message)  # Optional: Also print the error to console
+
+    except requests.exceptions.ConnectionError as conn_err:
+        error_message = f"Connection error occurred: {conn_err}"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(error_message)
+        print(error_message)  # Optional: Also print the error to console
+
+    except requests.exceptions.Timeout as timeout_err:
+        error_message = f"Timeout error occurred: {timeout_err}"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(error_message)
+        print(error_message)  # Optional: Also print the error to console
+
+    except requests.exceptions.RequestException as req_err:
+        error_message = f"An error occurred: {req_err}"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(error_message)
+        print(error_message)  # Optional: Also print the error to console
+
+def get_rainbow():
+    url = "https://www.blockchaincenter.net/en/bitcoin-rainbow-chart/"
+    output_file = "rainbow.txt"
+    extract_active_spans(url, output_file)
+
 def get_fear_and_greed_index_from_page(html_content):
     """
     Extract the Fear and Greed index from the given HTML content.
@@ -134,3 +222,4 @@ def save_fear_and_greed_indices():
 
 if __name__ == "__main__":
     save_fear_and_greed_indices()
+    get_rainbow()
