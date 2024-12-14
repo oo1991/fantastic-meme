@@ -28,7 +28,7 @@ def get_projects(html):
 def get_date(html, project, offset_hours=3):
     soup = BeautifulSoup(html, 'html.parser')
 
-    tags = soup.find_all('div', {'class': 'mb-[16px] flex items-center justify-between'})
+    tags = soup.find_all('div', {'class': 'mb-4 flex items-center justify-between'})
 
     year = tags[-1].find_all('div', {'class': 'font-inter tracking-[-0.12px] text-[13px] leading-[16px] font-medium text-left'})[-3].text
     month = tags[-1].find_all('div', {'class': 'font-inter tracking-[-0.12px] text-[13px] leading-[16px] font-medium text-left'})[-2].text
