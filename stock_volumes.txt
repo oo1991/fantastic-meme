@@ -18,7 +18,7 @@ NKE CAP: $114.53B, Volume (last 24h): $49.86M
 QCOM CAP: $169.86B, Volume (last 24h): $17.23M
 SBUX CAP: $99.74B, Volume (last 24h): $26.47M
 BLK CAP: $159.32B, Volume (last 24h): $2.08M
-DPZ CAP: $14.77B, Volume (last 24h): $932700.00
+DPZ CAP: $14.72B, Volume (last 24h): $932700.00
 UBER CAP: $127.88B, Volume (last 24h): $26.34M
 MARA CAP: $6.77B, Volume (last 24h): $54.32M
 RIOT CAP: $3.97B, Volume (last 24h): $34.54M
