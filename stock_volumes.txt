@@ -13,10 +13,10 @@ ADBE CAP: $196.54B, Volume (last 24h): $2.94M
 MCD CAP: $210.41B, Volume (last 24h): $1.62M
 NFLX CAP: $387.94B, Volume (last 24h): $3.22M
 ORCL CAP: $472.57B, Volume (last 24h): $4.34M
-INTC CAP: $87.55B, Volume (last 24h): $48.19M
+INTC CAP: $87.64B, Volume (last 24h): $48.19M
 NKE CAP: $113.75B, Volume (last 24h): $6.33M
 QCOM CAP: $174.69B, Volume (last 24h): $7.23M
-SBUX CAP: $104.59B, Volume (last 24h): $8.20M
+SBUX CAP: $104.60B, Volume (last 24h): $8.20M
 BLK CAP: $161.72B, Volume (last 24h): $337100.00
 DPZ CAP: $14.84B, Volume (last 24h): $291000.00
 UBER CAP: $128.72B, Volume (last 24h): $13.46M
