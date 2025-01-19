@@ -19,7 +19,7 @@ QCOM CAP: $182.83B, Volume (last 24h): $8.07M
 SBUX CAP: $107.86B, Volume (last 24h): $8.36M
 BLK CAP: $155.65B, Volume (last 24h): $1.08M
 DPZ CAP: $14.76B, Volume (last 24h): $526600.00
-UBER CAP: $144.41B, Volume (last 24h): $27.06M
+UBER CAP: $141.80B, Volume (last 24h): $27.06M
 MARA CAP: $6.76B, Volume (last 24h): $88.18M
 RIOT CAP: $4.61B, Volume (last 24h): $35.87M
-COIN CAP: $70.51B, Volume (last 24h): $11.25M
+COIN CAP: $73.97B, Volume (last 24h): $11.25M
