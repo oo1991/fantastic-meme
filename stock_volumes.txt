@@ -15,8 +15,8 @@ NFLX CAP: $417.88B, Volume (last 24h): $4.54M
 ORCL CAP: $513.52B, Volume (last 24h): $12.14M
 INTC CAP: $89.84B, Volume (last 24h): $66.17M
 NKE CAP: $108.82B, Volume (last 24h): $8.10M
-QCOM CAP: $191.21B, Volume (last 24h): $5.82M
-SBUX CAP: $112.03B, Volume (last 24h): $6.96M
+QCOM CAP: $190.25B, Volume (last 24h): $5.82M
+SBUX CAP: $112.24B, Volume (last 24h): $6.96M
 BLK CAP: $158.05B, Volume (last 24h): $731300.00
 DPZ CAP: $14.99B, Volume (last 24h): $649800.00
 UBER CAP: $144.37B, Volume (last 24h): $14.34M
