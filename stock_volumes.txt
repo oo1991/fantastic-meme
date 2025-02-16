@@ -17,9 +17,9 @@ INTC CAP: $102.19B, Volume (last 24h): $229.71M
 NKE CAP: $108.04B, Volume (last 24h): $9.24M
 QCOM CAP: $190.49B, Volume (last 24h): $4.69M
 SBUX CAP: $127.85B, Volume (last 24h): $9.11M
-BLK CAP: $151.83B, Volume (last 24h): $965200.00
-DPZ CAP: $16.57B, Volume (last 24h): $507800.00
+BLK CAP: $150.84B, Volume (last 24h): $965200.00
+DPZ CAP: $16.46B, Volume (last 24h): $507800.00
 UBER CAP: $167.24B, Volume (last 24h): $15.39M
 MARA CAP: $5.74B, Volume (last 24h): $25.17M
 RIOT CAP: $4.22B, Volume (last 24h): $21.54M
-COIN CAP: $74.63B, Volume (last 24h): $19.23M
+COIN CAP: $69.64B, Volume (last 24h): $19.23M
