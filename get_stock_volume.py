@@ -26,6 +26,10 @@ stocks = [
     'MARA',
     'RIOT',
     'COIN',
+    'MSTR',
+    'BITF',
+    'CORZ',
+    'CLSK'
 ]
 
 class StockMarketCup:
