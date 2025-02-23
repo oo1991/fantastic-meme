@@ -179,6 +179,31 @@ def get_fear_and_greed_index_cryptorank():
     finally:
         driver.quit()
 
+def get_cbbi_index():
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    
+    url = "https://colintalkscrypto.com/cbbi/"
+    driver.get(url)
+    
+    driver.implicitly_wait(10)
+
+    time.sleep(5)
+
+    page = driver.page_source
+
+    soup = BeautifulSoup(page, 'html.parser')
+    
+    # Find the <h1> tag with the given classes
+    score_tag = soup.find('h1', class_='title confidence-score-value')
+    if score_tag:
+        print('CBBI Index: ', score_tag.get_text(strip=True))
+        return score_tag.get_text(strip=True)
+    else:
+        print("Could not find the CBBI index on the page.")
+        return ""
+
 def get_altcoin_season_index(url: str = "https://www.blockchaincenter.net/en/altcoin-season-index/") -> str:
     try:
         response = requests.get(url)
@@ -201,6 +226,7 @@ def save_fear_and_greed_indices():
     coinmarketcap_index = get_fear_and_greed_index_coinmarketcap()
     cryptorank_index = get_fear_and_greed_index_cryptorank()
     altcoin_index = get_altcoin_season_index()
+    cbbi_index = get_cbbi_index()
     scan_time = datetime.utcnow().isoformat() + "Z"
 
     with open("fear_and_greed_index.txt", "w") as file:
@@ -219,6 +245,11 @@ def save_fear_and_greed_indices():
             file.write(f"Altcoin Season Index: {altcoin_index}\n")
         else:
             file.write("Altcoin Season Index: Error fetching data\n")
+
+        if cbbi_index:
+            file.write(f"CBBI Index: {cbbi_index}\n")
+        else:
+            file.write("CBBI Index: Error fetching data\n")
 
 if __name__ == "__main__":
     save_fear_and_greed_indices()
