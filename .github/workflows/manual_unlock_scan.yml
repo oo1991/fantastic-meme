@@ -21,7 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install selenium webdriver-manager beautifulsoup4 requests undetected-chromedriver selenium-stealth distutils
+        pip install distutils selenium webdriver-manager beautifulsoup4 requests undetected-chromedriver selenium-stealth 
 
     - name: Run unlock_scan
       run: python -c "from unlock_scan import unlock_scan; unlock_scan()"
