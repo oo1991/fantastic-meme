@@ -7,6 +7,8 @@ from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, timedelta
 import time
 from settings import s
+import undetected_chromedriver as uc
+from selenium_stealth import stealth
 
 def get_projects(html):
     soup = BeautifulSoup(html, 'html.parser')
@@ -85,10 +87,42 @@ def save_page(page):
 
 class ChromeBrowserN:
     def __init__(self, num):
-        options = webdriver.ChromeOptions()
-        options.add_argument('--headless')
-        self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        #options = webdriver.ChromeOptions()
+        #options.add_argument('--headless')
+        #self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        #self.driver.implicitly_wait(10)
+        options = uc.ChromeOptions()
+        options.add_argument('--headless=new')
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36")
+        
+        # Optional: Run in headless mode
+        # options.add_argument('--headless=new')
+    
+        self.driver = uc.Chrome(options=options)
         self.driver.implicitly_wait(10)
+        self.driver.set_page_load_timeout(10)
+    
+        # Apply selenium-stealth configurations
+        stealth(driver,
+                languages=["en-US", "en"],
+                vendor="Google Inc.",
+                platform="Win32",
+                webgl_vendor="Intel Inc.",
+                renderer="Intel Iris OpenGL Engine",
+                fix_hairline=True)
+    
+        # Execute additional JavaScript to hide automation fingerprints
+        self.driver.execute_cdp_cmd(
+            "Page.addScriptToEvaluateOnNewDocument",
+            {
+                "source": """
+                    Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                    Object.defineProperty(window, 'outerWidth', { value: 1920 });
+                    Object.defineProperty(window, 'outerHeight', { value: 1080 });
+                """
+            }
+        )
     
     def load_page(self, url):
         self.driver.get(url)
