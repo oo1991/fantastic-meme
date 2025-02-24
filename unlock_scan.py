@@ -104,7 +104,7 @@ class ChromeBrowserN:
         self.driver.set_page_load_timeout(10)
     
         # Apply selenium-stealth configurations
-        stealth(driver,
+        stealth(self.driver,
                 languages=["en-US", "en"],
                 vendor="Google Inc.",
                 platform="Win32",
