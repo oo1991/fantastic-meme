@@ -18,6 +18,9 @@ jobs:
       with:
         python-version: '3.x'
 
+    - name: Print Python version
+      run: python --version
+
     - name: Install system dependencies
       run: |
         sudo apt-get update
