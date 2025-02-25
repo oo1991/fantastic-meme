@@ -140,7 +140,7 @@ class Unlock:
     def check(self):
         browser = ChromeBrowserN(1)
         browser.load_page("https://tokenomist.ai/unlocks")
-        time.sleep(3)
+        time.sleep(10)
 
         page = browser.get_page()
         projects = get_projects(page)
