@@ -148,7 +148,7 @@ def get_fear_and_greed_index_coinmarketcap():
         html_content = driver.page_source
         
         # Print a portion of the page content for debugging
-        print(html_content)  # Prints the first 5000 characters of the page content
+        #print(html_content)  # Prints the first 5000 characters of the page content
         
         # Use the previously defined function to extract the Fear and Greed index from the page source
         fng_index = get_fear_and_greed_index_from_page(html_content)
@@ -226,8 +226,10 @@ def get_usdt_cap():
         # Extract the text (USD₮ amount) from the element
         usdt_circulation = usdt_circulation_element.text.strip()
         print(f"USD₮ in circulation: {usdt_circulation}")
+        return usdt_circulation
     else:
         print("Could not find the USD₮ circulation data on the page.")
+        return '-1'
 
 def get_altcoin_season_index(url: str = "https://www.blockchaincenter.net/en/altcoin-season-index/") -> str:
     try:
@@ -276,6 +278,11 @@ def save_fear_and_greed_indices():
             file.write(f"CBBI Index: {cbbi_index}\n")
         else:
             file.write("CBBI Index: Error fetching data\n")
+
+        if usdt_cap:
+            file.write(f"USDT Cap: {usdt_cap}\n")
+        else:
+            file.write("USDT Cap: Error fetching data\n")
 
 if __name__ == "__main__":
     save_fear_and_greed_indices()
