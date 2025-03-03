@@ -204,6 +204,31 @@ def get_cbbi_index():
         print("Could not find the CBBI index on the page.")
         return ""
 
+def get_usdt_cap():
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    
+    url = "https://tether.to/en/transparency/?tab=usdt"
+    driver.get(url)
+    
+    driver.implicitly_wait(10)
+
+    time.sleep(5)
+
+    page = driver.page_source
+
+    soup = BeautifulSoup(page, 'html.parser')
+
+    usdt_circulation_element = soup.find('h4', {'class': 'MuiTypography-root jss46 MuiTypography-h4'})  # Example class name
+    
+    if usdt_circulation_element:
+        # Extract the text (USD₮ amount) from the element
+        usdt_circulation = usdt_circulation_element.text.strip()
+        print(f"USD₮ in circulation: {usdt_circulation}")
+    else:
+        print("Could not find the USD₮ circulation data on the page.")
+
 def get_altcoin_season_index(url: str = "https://www.blockchaincenter.net/en/altcoin-season-index/") -> str:
     try:
         response = requests.get(url)
@@ -227,6 +252,7 @@ def save_fear_and_greed_indices():
     cryptorank_index = get_fear_and_greed_index_cryptorank()
     altcoin_index = get_altcoin_season_index()
     cbbi_index = get_cbbi_index()
+    usdt_cap = get_usdt_cap()
     scan_time = datetime.utcnow().isoformat() + "Z"
 
     with open("fear_and_greed_index.txt", "w") as file:
