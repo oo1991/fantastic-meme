@@ -24,6 +24,6 @@ MARA CAP: $5.54B, Volume (last 24h): $59.34M
 RIOT CAP: $2.93B, Volume (last 24h): $25.06M
 COIN CAP: $55.21B, Volume (last 24h): $8.57M
 MSTR CAP: $74.75B, Volume (last 24h): $22.71M
-BITF CAP: $613.77M, Volume (last 24h): $42.91M
+BITF CAP: $618.37M, Volume (last 24h): $42.91M
 CORZ CAP: $2.29B, Volume (last 24h): $31.83M
 CLSK CAP: $2.48B, Volume (last 24h): $23.28M
