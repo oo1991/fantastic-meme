@@ -1,4 +1,4 @@
-TSLA CAP: $811.56B, Volume (last 24h): $128.66M
+TSLA CAP: $811.33B, Volume (last 24h): $128.66M
 AAPL CAP: $2.98T, Volume (last 24h): $87.30M
 MSFT CAP: $2.89T, Volume (last 24h): $23.83M
 AMZN CAP: $1.96T, Volume (last 24h): $50.54M
