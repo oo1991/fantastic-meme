@@ -11,7 +11,7 @@ PEP CAP: $176.97B, Volume (last 24h): $22.87M
 KO CAP: $296.31B, Volume (last 24h): $40.84M
 ADBE CAP: $160.64B, Volume (last 24h): $8.10M
 MCD CAP: $205.54B, Volume (last 24h): $7.07M
-NFLX CAP: $524.05B, Volume (last 24h): $5.34M
+NFLX CAP: $524.04B, Volume (last 24h): $5.34M
 ORCL CAP: $576.29B, Volume (last 24h): $20.84M
 INTC CAP: $91.95B, Volume (last 24h): $133.39M
 NKE CAP: $88.25B, Volume (last 24h): $19.07M
