@@ -49,28 +49,18 @@ jobs:
 
       - name: Notify Slack of workflow result
         if: always()
-        uses: slackapi/slack-github-action@v1.29.0
+        uses: slackapi/slack-github-action@v2.1.0    # upgrade to v2
         with:
+          webhook-type: incoming-webhook              # tell it you’re using an incoming webhook
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}   # the same secret
           payload: |
-            {
-              "text": ":unlock: *Unlock Scan* finished with *${{ job.status }}*",
-              "attachments": [
-                {
-                  "color": ${{ job.status == 'success' && 'good' || 'danger' }},
-                  "fields": [
-                    {
-                      "title": "Repository",
-                      "value": "<https://github.com/${{ github.repository }}|${{ github.repository }}>",
-                      "short": true
-                    },
-                    {
-                      "title": "Run details",
-                      "value": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>",
-                      "short": true
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+            text: ":unlock: *Unlock Scan* finished with *${{ job.status }}*"
+            attachments:
+              - color: ${{ job.status == 'success' && 'good' || 'danger' }}
+                fields:
+                  - title: "Repository"
+                    value: "<https://github.com/${{ github.repository }}|${{ github.repository }}>"
+                    short: true
+                  - title: "Run details"
+                    value: "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View run>"
+                    short: true
