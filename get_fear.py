@@ -250,6 +250,7 @@ def get_altcoin_season_index(url: str = "https://www.blockchaincenter.net/en/alt
         return f"An error occurred while fetching the Altcoin Season Index: {e}"
 
 def save_fear_and_greed_indices():
+    error = False
     coinmarketcap_index = get_fear_and_greed_index_coinmarketcap()
     cryptorank_index = get_fear_and_greed_index_cryptorank()
     altcoin_index = get_altcoin_season_index()
@@ -263,26 +264,34 @@ def save_fear_and_greed_indices():
             file.write(f"CoinMarketCap Fear & Greed Index: {coinmarketcap_index}\n")
         else:
             file.write("CoinMarketCap Fear & Greed Index: Error fetching data\n")
+            error = True
 
         if cryptorank_index:
             file.write(f"CryptoRank Fear & Greed Index: {cryptorank_index}\n")
         else:
             file.write("CryptoRank Fear & Greed Index: Error fetching data\n")
+            error = True
         
         if "An error occurred" not in altcoin_index:
             file.write(f"Altcoin Season Index: {altcoin_index}\n")
         else:
             file.write("Altcoin Season Index: Error fetching data\n")
+            error = True
 
         if cbbi_index:
             file.write(f"CBBI Index: {cbbi_index}\n")
         else:
             file.write("CBBI Index: Error fetching data\n")
+            error = True
 
         if usdt_cap:
             file.write(f"USDT Cap: {usdt_cap}\n")
         else:
             file.write("USDT Cap: Error fetching data\n")
+            error = True
+
+    if error:
+        sys.exit(1)
 
 if __name__ == "__main__":
     save_fear_and_greed_indices()
