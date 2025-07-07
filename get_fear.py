@@ -13,6 +13,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import logging
 import time
+import sys
 
 def extract_active_spans(url: str, output_file: str) -> None:
     """
