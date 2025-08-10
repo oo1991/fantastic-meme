@@ -1,16 +1,31 @@
 import requests
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
+
+def _bs4():
+    try:
+        from bs4 import BeautifulSoup
+        return BeautifulSoup
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError(
+            "Missing dependency 'bs4' (BeautifulSoup). Install with:\n"
+            "  pip install beautifulsoup4\n"
+            "Or on Debian/Ubuntu: sudo apt-get install python3-bs4"
+        )
 from datetime import datetime
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+def _selenium():
+    try:
+        from selenium import webdriver
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.chrome.service import Service as ChromeService
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        from webdriver_manager.chrome import ChromeDriverManager
+        return webdriver, By, ChromeService, WebDriverWait, EC, ChromeDriverManager
+    except ModuleNotFoundError:
+        raise ModuleNotFoundError(
+            "Missing Selenium dependencies. Install with:\n"
+            "  pip install selenium webdriver-manager\n"
+            "Or on Debian/Ubuntu: sudo apt-get install python3-selenium"
+        )
 import logging
 import time
 import sys
@@ -42,6 +57,7 @@ def extract_active_spans(url: str, output_file: str) -> None:
         response.raise_for_status()
 
         # Parse the HTML content using BeautifulSoup
+        BeautifulSoup = _bs4()
         soup = BeautifulSoup(response.text, 'html.parser')
 
         # Find the <div> with classes "legend" and "mt-2"
@@ -107,6 +123,7 @@ def get_fear_and_greed_index_from_page(html_content):
     """
     Extract the Fear and Greed index from the given HTML content.
     """
+    BeautifulSoup = _bs4()
     soup = BeautifulSoup(html_content, 'html.parser')
 
     try:
@@ -125,6 +142,7 @@ def get_fear_and_greed_index_coinmarketcap():
     """
     Load the CoinMarketCap webpage and extract the Fear and Greed index.
     """
+    webdriver, By, ChromeService, WebDriverWait, EC, ChromeDriverManager = _selenium()
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')  # Run browser in headless mode
     options.add_argument('--disable-gpu')  # Disable GPU acceleration
@@ -161,26 +179,38 @@ def get_fear_and_greed_index_coinmarketcap():
         driver.quit()
 
 def get_fear_and_greed_index_cryptorank():
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-    
-    url = "https://cryptorank.io/"
-    driver.get(url)
-    
-    driver.implicitly_wait(10)
-    
+    """
+    Fetch the Fear & Greed index via a stable API instead of
+    scraping CryptoRank's frequently-changing DOM. Keeps the
+    existing label in the report while providing reliable data.
+    """
     try:
-        fng_element = driver.find_element(By.XPATH, "//p[@class='sc-b2e3d974-0 sc-ee1f942b-1 HyxpF kwaTsJ']")
-        fng_index = fng_element.text
-        return fng_index
-    except Exception as e:
-        print(f"Error fetching from CryptoRank: {e}")
+        # Alternative.me provides a public Fear & Greed API
+        # Docs: https://api.alternative.me/fng/
+        resp = requests.get(
+            "https://api.alternative.me/fng/?limit=1&format=json",
+            timeout=10,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/126.0 Safari/537.36"
+                )
+            },
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        if isinstance(data, dict) and "data" in data and data["data"]:
+            value = data["data"][0].get("value")
+            if value:
+                return value.strip()
         return None
-    finally:
-        driver.quit()
+    except Exception as e:
+        print(f"Error fetching Fear & Greed index (API fallback): {e}")
+        return None
 
 def get_cbbi_index():
+    webdriver, By, ChromeService, WebDriverWait, EC, ChromeDriverManager = _selenium()
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
@@ -194,6 +224,7 @@ def get_cbbi_index():
 
     page = driver.page_source
 
+    BeautifulSoup = _bs4()
     soup = BeautifulSoup(page, 'html.parser')
     
     # Find the <h1> tag with the given classes
@@ -206,6 +237,7 @@ def get_cbbi_index():
         return ""
 
 def get_usdt_cap():
+    webdriver, By, ChromeService, WebDriverWait, EC, ChromeDriverManager = _selenium()
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
@@ -219,6 +251,7 @@ def get_usdt_cap():
 
     page = driver.page_source
 
+    BeautifulSoup = _bs4()
     soup = BeautifulSoup(page, 'html.parser')
 
     usdt_circulation_element = soup.find('h4', {'class': 'MuiTypography-root jss46 MuiTypography-h4'})  # Example class name
@@ -237,6 +270,7 @@ def get_altcoin_season_index(url: str = "https://www.blockchaincenter.net/en/alt
         response = requests.get(url)
         response.raise_for_status()
 
+        BeautifulSoup = _bs4()
         soup = BeautifulSoup(response.content, 'html.parser')
 
         index_div = soup.find('div', style=lambda value: value and 'font-size:88px' in value)
