@@ -7,7 +7,7 @@ GOOGL CAP: $2.47T, Volume (last 24h): $34.91M
 META CAP: $1.97T, Volume (last 24h): $13.36M
 V CAP: $668.60B, Volume (last 24h): $4.95M
 MA CAP: $525.86B, Volume (last 24h): $2.26M
-PEP CAP: $205.91B, Volume (last 24h): $9.16M
+PEP CAP: $205.94B, Volume (last 24h): $9.16M
 KO CAP: $300.91B, Volume (last 24h): $12.37M
 ADBE CAP: $150.53B, Volume (last 24h): $3.72M
 MCD CAP: $220.45B, Volume (last 24h): $3.42M
