@@ -26,12 +26,6 @@ jobs:
     - name: Run the script
       run: python get_fear.py
 
-    - name: Notify Slack (Success)
-      if: success()
-      run: |
-        curl -X POST -H 'Content-type: application/json' \
-        --data '{"text":"✅ Fear & Greed Index updated successfully."}' ${{ secrets.SLACK_FEAR }}
-
     - name: Notify Slack (Failure)
       if: failure()
       run: |
