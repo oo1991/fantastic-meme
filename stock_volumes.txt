@@ -5,7 +5,7 @@ AMZN CAP: $2.61T, Volume (last 24h): $46.29M
 NVDA CAP: $4.58T, Volume (last 24h): $264.20M
 GOOGL CAP: $3.37T, Volume (last 24h): $34.44M
 META CAP: $1.57T, Volume (last 24h): $29.87M
-V CAP: $649.61B, Volume (last 24h): $5.32M
+V CAP: $648.48B, Volume (last 24h): $5.32M
 MA CAP: $495.67B, Volume (last 24h): $2.51M
 PEP CAP: $195.46B, Volume (last 24h): $7.59M
 KO CAP: $303.48B, Volume (last 24h): $25.10M
@@ -20,10 +20,10 @@ SBUX CAP: $97.28B, Volume (last 24h): $14.99M
 BLK CAP: $167.90B, Volume (last 24h): $470300.00
 DPZ CAP: $13.86B, Volume (last 24h): $486400.00
 UBER CAP: $191.14B, Volume (last 24h): $16.47M
-MARA CAP: $6.04B, Volume (last 24h): $51.38M
+MARA CAP: $6.00B, Volume (last 24h): $51.38M
 RIOT CAP: $6.32B, Volume (last 24h): $22.40M
-COIN CAP: $79.60B, Volume (last 24h): $11.92M
+COIN CAP: $83.36B, Volume (last 24h): $11.92M
 MSTR CAP: $69.52B, Volume (last 24h): $16.92M
-BITF CAP: $2.03B, Volume (last 24h): $69.71M
+BITF CAP: $2.02B, Volume (last 24h): $69.71M
 CORZ CAP: $6.26B, Volume (last 24h): $14.11M
 CLSK CAP: $4.64B, Volume (last 24h): $27.21M
