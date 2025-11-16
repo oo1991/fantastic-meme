@@ -11,7 +11,7 @@ PEP CAP: $199.43B, Volume (last 24h): $5.77M
 KO CAP: $306.10B, Volume (last 24h): $13.17M
 ADBE CAP: $139.64B, Volume (last 24h): $2.76M
 MCD CAP: $219.04B, Volume (last 24h): $3.11M
-NFLX CAP: $489.08B, Volume (last 24h): $4.74M
+NFLX CAP: $489.08B, Volume (last 24h): $47.12M
 ORCL CAP: $635.30B, Volume (last 24h): $36.03M
 INTC CAP: $171.29B, Volume (last 24h): $71.54M
 NKE CAP: $97.61B, Volume (last 24h): $17.75M
@@ -25,5 +25,5 @@ RIOT CAP: $5.19B, Volume (last 24h): $31.63M
 COIN CAP: $76.35B, Volume (last 24h): $11.75M
 MSTR CAP: $59.92B, Volume (last 24h): $23.16M
 BITF CAP: $1.55B, Volume (last 24h): $79.85M
-CORZ CAP: $4.63B, Volume (last 24h): $21.95M
+CORZ CAP: $4.70B, Volume (last 24h): $21.95M
 CLSK CAP: $3.20B, Volume (last 24h): $42.31M
