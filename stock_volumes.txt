@@ -2,7 +2,7 @@ TSLA CAP: $1.30T, Volume (last 24h): $100.18M
 AAPL CAP: $4.03T, Volume (last 24h): $58.78M
 MSFT CAP: $3.51T, Volume (last 24h): $31.70M
 AMZN CAP: $2.36T, Volume (last 24h): $68.44M
-NVDA CAP: $4.36T, Volume (last 24h): $346.07M
+NVDA CAP: $4.35T, Volume (last 24h): $346.07M
 GOOGL CAP: $3.63T, Volume (last 24h): $73.95M
 META CAP: $1.50T, Volume (last 24h): $20.98M
 V CAP: $636.59B, Volume (last 24h): $8.89M
