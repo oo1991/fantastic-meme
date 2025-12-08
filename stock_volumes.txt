@@ -21,7 +21,7 @@ BLK CAP: $166.35B, Volume (last 24h): $544100.00
 DPZ CAP: $14.14B, Volume (last 24h): $751000.00
 UBER CAP: $190.44B, Volume (last 24h): $11.15M
 MARA CAP: $4.44B, Volume (last 24h): $37.48M
-RIOT CAP: $5.55B, Volume (last 24h): $15.22M
+RIOT CAP: $5.56B, Volume (last 24h): $15.22M
 COIN CAP: $72.73B, Volume (last 24h): $7.15M
 MSTR CAP: $51.43B, Volume (last 24h): $20.69M
 BITF CAP: $1.75B, Volume (last 24h): $47.75M
