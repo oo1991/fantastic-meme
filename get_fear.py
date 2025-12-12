@@ -10,7 +10,7 @@ def _bs4():
             "  pip install beautifulsoup4\n"
             "Or on Debian/Ubuntu: sudo apt-get install python3-bs4"
         )
-from datetime import datetime
+from datetime import datetime, UTC
 def _selenium():
     try:
         from selenium import webdriver
@@ -213,57 +213,89 @@ def get_cbbi_index():
     webdriver, By, ChromeService, WebDriverWait, EC, ChromeDriverManager = _selenium()
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-    
-    url = "https://colintalkscrypto.com/cbbi/"
-    driver.get(url)
-    
-    driver.implicitly_wait(10)
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--window-size=1920,1080')
 
-    time.sleep(5)
-
-    page = driver.page_source
-
-    BeautifulSoup = _bs4()
-    soup = BeautifulSoup(page, 'html.parser')
+    driver = None
+    try:
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        driver.set_page_load_timeout(60)
+        
+        url = "https://colintalkscrypto.com/cbbi/"
+        driver.get(url)
+        
+        driver.implicitly_wait(10)
     
-    # Find the <h1> tag with the given classes
-    score_tag = soup.find('h1', class_='title confidence-score-value')
-    if score_tag:
-        print('CBBI Index: ', score_tag.get_text(strip=True))
-        return score_tag.get_text(strip=True)
-    else:
-        print("Could not find the CBBI index on the page.")
+        time.sleep(5)
+    
+        page = driver.page_source
+    
+        BeautifulSoup = _bs4()
+        soup = BeautifulSoup(page, 'html.parser')
+        
+        # Find the <h1> tag with the given classes
+        score_tag = soup.find('h1', class_='title confidence-score-value')
+        if score_tag:
+            print('CBBI Index: ', score_tag.get_text(strip=True))
+            return score_tag.get_text(strip=True)
+        else:
+            print("Could not find the CBBI index on the page.")
+            return ""
+    except Exception as e:
+        print(f"Error fetching CBBI Index: {e}")
         return ""
+    finally:
+        if driver:
+            try:
+                driver.quit()
+            except Exception:
+                pass
 
 def get_usdt_cap():
     webdriver, By, ChromeService, WebDriverWait, EC, ChromeDriverManager = _selenium()
     options = webdriver.ChromeOptions()
     options.add_argument('--headless')
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--window-size=1920,1080')
+
+    driver = None
+    try:
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        driver.set_page_load_timeout(60)
+        
+        url = "https://tether.to/en/transparency/?tab=usdt"
+        driver.get(url)
+        
+        driver.implicitly_wait(10)
     
-    url = "https://tether.to/en/transparency/?tab=usdt"
-    driver.get(url)
+        time.sleep(5)
     
-    driver.implicitly_wait(10)
-
-    time.sleep(5)
-
-    page = driver.page_source
-
-    BeautifulSoup = _bs4()
-    soup = BeautifulSoup(page, 'html.parser')
-
-    usdt_circulation_element = soup.find('h4', {'class': 'MuiTypography-root jss46 MuiTypography-h4'})  # Example class name
+        page = driver.page_source
     
-    if usdt_circulation_element:
-        # Extract the text (USD₮ amount) from the element
-        usdt_circulation = usdt_circulation_element.text.strip()
-        print(f"USD₮ in circulation: {usdt_circulation}")
-        return usdt_circulation
-    else:
-        print("Could not find the USD₮ circulation data on the page.")
+        BeautifulSoup = _bs4()
+        soup = BeautifulSoup(page, 'html.parser')
+    
+        usdt_circulation_element = soup.find('h4', {'class': 'MuiTypography-root jss46 MuiTypography-h4'})  # Example class name
+        
+        if usdt_circulation_element:
+            # Extract the text (USDT amount) from the element
+            usdt_circulation = usdt_circulation_element.text.strip()
+            print(f"USDT in circulation: {usdt_circulation}")
+            return usdt_circulation
+        else:
+            print("Could not find the USDT circulation data on the page.")
+            return '-1'
+    except Exception as e:
+        print(f"Error fetching USDT Cap: {e}")
         return '-1'
+    finally:
+        if driver:
+            try:
+                driver.quit()
+            except Exception:
+                pass
 
 def get_altcoin_season_index(url: str = "https://www.blockchaincenter.net/en/altcoin-season-index/") -> str:
     try:
@@ -291,9 +323,9 @@ def save_fear_and_greed_indices():
     altcoin_index = get_altcoin_season_index()
     cbbi_index = get_cbbi_index()
     usdt_cap = get_usdt_cap()
-    scan_time = datetime.utcnow().isoformat() + "Z"
+    scan_time = datetime.now(UTC).isoformat().replace('+00:00', 'Z')
 
-    with open("fear_and_greed_index.txt", "w") as file:
+    with open("fear_and_greed_index.txt", "w", encoding='utf-8') as file:
         file.write(f"Scan Time: {scan_time}\n")
         if coinmarketcap_index:
             file.write(f"CoinMarketCap Fear & Greed Index: {coinmarketcap_index}\n")

@@ -94,14 +94,24 @@ class ChromeBrowserN:
         options = uc.ChromeOptions()
         options.add_argument('--headless=new')
         options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         
         # Optional: Run in headless mode
         # options.add_argument('--headless=new')
     
-        self.driver = uc.Chrome(options=options)
+        try:
+            # Let undetected-chromedriver handle version matching automatically
+            self.driver = uc.Chrome(options=options, version_main=None)
+        except Exception as e:
+            print(f"Failed to initialize with auto-version, trying with use_subprocess: {e}")
+            # Fallback: try with use_subprocess=False
+            self.driver = uc.Chrome(options=options, use_subprocess=False, version_main=None)
+            
         self.driver.implicitly_wait(10)
-        self.driver.set_page_load_timeout(10)
+        self.driver.set_page_load_timeout(60)
     
         # Apply selenium-stealth configurations
         stealth(self.driver,
@@ -139,25 +149,26 @@ class Unlock:
 
     def check(self):
         browser = ChromeBrowserN(1)
-        browser.load_page("https://tokenomist.ai/unlocks")
-        time.sleep(10)
+        try:
+            browser.load_page("https://tokenomist.ai/unlocks")
+            time.sleep(10)
 
-        page = browser.get_page()
-        projects = get_projects(page)
-        print('Projects: ', projects)
-
-        tokens = {}
-
-        for project in projects:
-            browser.load_page("https://tokenomist.ai" + project[0])
-            time.sleep(5)
             page = browser.get_page()
-            token, dtt = get_date(page, project[1])
-            tokens[token] = dtt
+            projects = get_projects(page)
+            print('Projects: ', projects)
 
-        browser.close()
+            tokens = {}
 
-        self.save_unlocks(tokens)
+            for project in projects:
+                browser.load_page("https://tokenomist.ai" + project[0])
+                time.sleep(5)
+                page = browser.get_page()
+                token, dtt = get_date(page, project[1])
+                tokens[token] = dtt
+
+            self.save_unlocks(tokens)
+        finally:
+            browser.close()
 
     def save_unlocks(self, tokens):
         with open('token_unlocks.txt', 'w') as file:
