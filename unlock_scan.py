@@ -14,51 +14,76 @@ def get_projects(html, debug=False):
     soup = BeautifulSoup(html, 'html.parser')
     result = []
 
+    # Always save HTML when debugging or when we need to troubleshoot
     if debug:
         with open('debug_unlocks_page.html', 'w', encoding='utf-8') as f:
             f.write(html)
         print("DEBUG: Saved HTML to debug_unlocks_page.html")
 
-    # Strategy 1: Find table rows with links to token pages
-    # Look for <tr> elements that contain links starting with /token/
-    all_rows = soup.find_all('tr')
-    print(f'Total TR elements found: {len(all_rows)}')
+    # Strategy 1: Find all links to token pages anywhere in the document
+    # Check for various URL patterns: /token/, token.unlocks.app, /unlocks/
+    all_links = soup.find_all('a', href=lambda x: x and ('/token/' in x or 'token.unlocks.app' in x))
+    print(f'Total links with /token/ or token.unlocks.app found: {len(all_links)}')
 
-    for row in all_rows:
-        # Skip header rows (usually contain <th> instead of <td>)
-        if row.find('th'):
+    seen_links = set()
+    for link_tag in all_links:
+        link = link_tag.get('href', '')
+        if link in seen_links:
             continue
+        seen_links.add(link)
 
-        # Look for links that point to token pages
-        link_tag = row.find('a', href=lambda x: x and '/token/' in x)
-        if link_tag:
+        # Try to get the token name
+        text = link_tag.get_text(strip=True)
+        if not text or len(text) > 50:
+            # Extract from URL as fallback
+            text = link.split('/')[-1].upper()
+
+        if link and text:
+            print(f"Found: {link} -> {text}")
+            result.append([link, text])
+
+    # Strategy 2: If no /token/ links, try /unlocks/ links
+    if not result:
+        all_links = soup.find_all('a', href=lambda x: x and '/unlocks/' in x)
+        print(f'Total links with /unlocks/ found: {len(all_links)}')
+        for link_tag in all_links:
             link = link_tag.get('href', '')
-            # Try to get the token name from nearby text
-            # Usually it's in a div near the link or the link text itself
-            text = None
-
-            # Try to find token name in the first td
-            first_td = row.find('td')
-            if first_td:
-                # Look for text in nested divs
-                divs = first_td.find_all('div')
-                for div in divs:
-                    div_text = div.get_text(strip=True)
-                    # Token names are usually short and don't contain special chars
-                    if div_text and len(div_text) < 30 and not div_text.startswith('$'):
-                        text = div_text
-                        break
-
+            if link in seen_links:
+                continue
+            seen_links.add(link)
+            text = link_tag.get_text(strip=True)
             if not text:
-                text = link_tag.get_text(strip=True)
-
-            if not text:
-                # Extract from URL as fallback
                 text = link.split('/')[-1].upper()
-
             if link and text:
                 print(f"Found: {link} -> {text}")
                 result.append([link, text])
+
+    # Strategy 3: Look for any links that might be token-related
+    if not result:
+        # Look for links in table rows
+        all_rows = soup.find_all('tr')
+        print(f'Total TR elements found: {len(all_rows)}')
+        for row in all_rows:
+            links = row.find_all('a', href=True)
+            for link_tag in links:
+                link = link_tag.get('href', '')
+                # Skip navigation/external links
+                if link.startswith('#') or link.startswith('http') and 'tokenomist' not in link:
+                    continue
+                if link in seen_links:
+                    continue
+                seen_links.add(link)
+                text = link_tag.get_text(strip=True)
+                if link and text and len(text) < 50:
+                    print(f"Found in TR: {link} -> {text}")
+                    result.append([link, text])
+
+    # Strategy 4: Debug - print all links found on page
+    if not result:
+        print("DEBUG: No projects found. Listing all links on page:")
+        all_links = soup.find_all('a', href=True)[:20]  # First 20 links
+        for link_tag in all_links:
+            print(f"  Link: {link_tag.get('href', '')} -> {link_tag.get_text(strip=True)[:50]}")
 
     print('TAGS size: ', len(result))
     return result
@@ -185,32 +210,26 @@ def save_page(page):
 
 class ChromeBrowserN:
     def __init__(self, num):
-        #options = webdriver.ChromeOptions()
-        #options.add_argument('--headless')
-        #self.driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-        #self.driver.implicitly_wait(10)
         options = uc.ChromeOptions()
         options.add_argument('--headless=new')
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
-        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        
-        # Optional: Run in headless mode
-        # options.add_argument('--headless=new')
-    
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--start-maximized")
+        # Use a more recent Chrome user agent
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+
         try:
-            # Let undetected-chromedriver handle version matching automatically
             self.driver = uc.Chrome(options=options, version_main=None)
         except Exception as e:
             print(f"Failed to initialize with auto-version, trying with use_subprocess: {e}")
-            # Fallback: try with use_subprocess=False
             self.driver = uc.Chrome(options=options, use_subprocess=False, version_main=None)
-            
+
         self.driver.implicitly_wait(10)
         self.driver.set_page_load_timeout(60)
-    
+
         # Apply selenium-stealth configurations
         stealth(self.driver,
                 languages=["en-US", "en"],
@@ -219,7 +238,7 @@ class ChromeBrowserN:
                 webgl_vendor="Intel Inc.",
                 renderer="Intel Iris OpenGL Engine",
                 fix_hairline=True)
-    
+
         # Execute additional JavaScript to hide automation fingerprints
         self.driver.execute_cdp_cmd(
             "Page.addScriptToEvaluateOnNewDocument",
@@ -228,6 +247,8 @@ class ChromeBrowserN:
                     Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
                     Object.defineProperty(window, 'outerWidth', { value: 1920 });
                     Object.defineProperty(window, 'outerHeight', { value: 1080 });
+                    Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+                    Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
                 """
             }
         )
@@ -287,9 +308,14 @@ class Unlock:
 
             if not projects:
                 print("WARNING: No projects found. The website structure may have changed.")
-                print("Enable debug mode to save HTML for analysis.")
-                if self.debug:
-                    print("Debug HTML saved. Check debug_unlocks_page.html")
+                # Always save HTML for debugging when no projects found
+                with open('debug_unlocks_page.html', 'w', encoding='utf-8') as f:
+                    f.write(page)
+                print("Debug HTML saved to debug_unlocks_page.html")
+                # Write a placeholder file so the action doesn't fail
+                with open('token_unlocks.txt', 'w') as f:
+                    f.write(f"# No unlock data available - website may have changed structure\n")
+                    f.write(f"# Last attempt: {datetime.now().isoformat()}\n")
                 return
 
             tokens = {}
