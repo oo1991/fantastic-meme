@@ -4,7 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import time
 from settings import s
 import undetected_chromedriver as uc
@@ -13,6 +13,7 @@ from selenium_stealth import stealth
 def get_projects(html, debug=False):
     soup = BeautifulSoup(html, 'html.parser')
     result = []
+    seen_links = set()
 
     # Always save HTML when debugging or when we need to troubleshoot
     if debug:
@@ -20,27 +21,80 @@ def get_projects(html, debug=False):
             f.write(html)
         print("DEBUG: Saved HTML to debug_unlocks_page.html")
 
+    # Known navigation paths to exclude when matching /<slug> token links
+    nav_paths = {
+        '/', '/overview', '/update', '/auth/signin', '/pricing',
+        '/onchain-claim', '/fundraising/screener',
+        '/buyback/compare', '/buyback/screener',
+        '/burn/compare', '/burn/screener',
+        '/wenunlocks', '/insights', '/builder/landing',
+    }
+
+    # Strategy 0: New URL format — token pages are now /<slug> links inside table rows
+    # Also extract time-left from the 7th td in each row
+    tbody = soup.find('tbody')
+    if tbody:
+        rows = tbody.find_all('tr', class_=lambda x: x and 'cursor-pointer' in x)
+        print(f'Total table rows found: {len(rows)}')
+        for row in rows:
+            # Find the token link in this row
+            link_tag = row.find('a', href=True)
+            if not link_tag:
+                continue
+            link = link_tag.get('href', '')
+            if not (link.startswith('/')
+                    and link.count('/') == 1
+                    and link not in nav_paths
+                    and not link.startswith('/#')):
+                continue
+            if link in seen_links:
+                continue
+            seen_links.add(link)
+
+            text = link_tag.get_text(strip=True)
+            if not text or len(text) > 50:
+                text = link.strip('/').upper()
+
+            # Extract time-left from the 7th td (0-indexed: tds[6])
+            time_left = ""
+            tds = row.find_all('td')
+            if len(tds) >= 7:
+                button = tds[6].find('button')
+                if button:
+                    divs = button.find_all('div', recursive=False)
+                    if len(divs) >= 3:
+                        # 3rd div contains the countdown grid with D/H/M/S spans
+                        countdown_spans = divs[2].find_all('span')
+                        # Spans alternate: value, unit, value, unit...
+                        parts = [s.get_text(strip=True) for s in countdown_spans]
+                        # Pair them up: "0" "D" "15" "H" "56" "M" "9" "S"
+                        time_left = " ".join(f"{parts[i]}{parts[i+1]}" for i in range(0, len(parts) - 1, 2))
+
+            if link and text:
+                print(f"Found: {text} -> {time_left}")
+                result.append([link, text, time_left])
+
     # Strategy 1: Find all links to token pages anywhere in the document
     # Check for various URL patterns: /token/, token.unlocks.app, /unlocks/
-    all_links = soup.find_all('a', href=lambda x: x and ('/token/' in x or 'token.unlocks.app' in x))
-    print(f'Total links with /token/ or token.unlocks.app found: {len(all_links)}')
+    if not result:
+        all_links = soup.find_all('a', href=lambda x: x and ('/token/' in x or 'token.unlocks.app' in x))
+        print(f'Total links with /token/ or token.unlocks.app found: {len(all_links)}')
 
-    seen_links = set()
-    for link_tag in all_links:
-        link = link_tag.get('href', '')
-        if link in seen_links:
-            continue
-        seen_links.add(link)
+        for link_tag in all_links:
+            link = link_tag.get('href', '')
+            if link in seen_links:
+                continue
+            seen_links.add(link)
 
-        # Try to get the token name
-        text = link_tag.get_text(strip=True)
-        if not text or len(text) > 50:
-            # Extract from URL as fallback
-            text = link.split('/')[-1].upper()
+            # Try to get the token name
+            text = link_tag.get_text(strip=True)
+            if not text or len(text) > 50:
+                # Extract from URL as fallback
+                text = link.split('/')[-1].upper()
 
-        if link and text:
-            print(f"Found: {link} -> {text}")
-            result.append([link, text])
+            if link and text:
+                print(f"Found: {link} -> {text}")
+                result.append([link, text])
 
     # Strategy 2: If no /token/ links, try /unlocks/ links
     if not result:
@@ -209,7 +263,7 @@ def save_page(page):
         file.write(page)
 
 class ChromeBrowserN:
-    def __init__(self, num):
+    def _make_options(self):
         options = uc.ChromeOptions()
         options.add_argument('--headless=new')
         options.add_argument("--disable-blink-features=AutomationControlled")
@@ -218,40 +272,84 @@ class ChromeBrowserN:
         options.add_argument("--disable-gpu")
         options.add_argument("--window-size=1920,1080")
         options.add_argument("--start-maximized")
-        # Use a more recent Chrome user agent
         options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+        return options
+
+    def _detect_chrome_version(self):
+        import subprocess, re, platform
+        try:
+            if platform.system() == "Windows":
+                result = subprocess.run(
+                    ["reg", "query", r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon", "/v", "version"],
+                    capture_output=True, text=True
+                )
+                match = re.search(r"(\d+)\.\d+\.\d+\.\d+", result.stdout)
+            else:
+                result = subprocess.run(["google-chrome", "--version"], capture_output=True, text=True)
+                match = re.search(r"(\d+)\.\d+\.\d+\.\d+", result.stdout)
+            if match:
+                return int(match.group(1))
+        except Exception as e:
+            print(f"Could not detect Chrome version: {e}")
+        return None
+
+    def _create_driver(self, version, headless=True):
+        opts = self._make_options() if headless else self._make_options_visible()
+        try:
+            driver = uc.Chrome(options=opts, version_main=version)
+        except Exception as e:
+            print(f"Failed to initialize, trying with use_subprocess: {e}")
+            opts = self._make_options() if headless else self._make_options_visible()
+            driver = uc.Chrome(options=opts, use_subprocess=False, version_main=version)
+        driver.implicitly_wait(10)
+        driver.set_page_load_timeout(60)
+        return driver
+
+    def _make_options_visible(self):
+        options = uc.ChromeOptions()
+        options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--start-maximized")
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+        return options
+
+    def __init__(self, num):
+        version = self._detect_chrome_version()
+        if version:
+            print(f"Detected Chrome major version: {version}")
+
+        self.driver = self._create_driver(version, headless=True)
+
+        # Apply optional stealth measures (UC already patches navigator.webdriver)
+        try:
+            self.driver.execute_cdp_cmd(
+                "Page.addScriptToEvaluateOnNewDocument",
+                {
+                    "source": """
+                        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
+                        Object.defineProperty(window, 'outerWidth', { value: 1920 });
+                        Object.defineProperty(window, 'outerHeight', { value: 1080 });
+                        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
+                        Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+                    """
+                }
+            )
+        except Exception as e:
+            print(f"CDP injection failed (non-fatal): {e}")
 
         try:
-            self.driver = uc.Chrome(options=options, version_main=None)
+            stealth(self.driver,
+                    languages=["en-US", "en"],
+                    vendor="Google Inc.",
+                    platform="Win32",
+                    webgl_vendor="Intel Inc.",
+                    renderer="Intel Iris OpenGL Engine",
+                    fix_hairline=True)
         except Exception as e:
-            print(f"Failed to initialize with auto-version, trying with use_subprocess: {e}")
-            self.driver = uc.Chrome(options=options, use_subprocess=False, version_main=None)
-
-        self.driver.implicitly_wait(10)
-        self.driver.set_page_load_timeout(60)
-
-        # Apply selenium-stealth configurations
-        stealth(self.driver,
-                languages=["en-US", "en"],
-                vendor="Google Inc.",
-                platform="Win32",
-                webgl_vendor="Intel Inc.",
-                renderer="Intel Iris OpenGL Engine",
-                fix_hairline=True)
-
-        # Execute additional JavaScript to hide automation fingerprints
-        self.driver.execute_cdp_cmd(
-            "Page.addScriptToEvaluateOnNewDocument",
-            {
-                "source": """
-                    Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-                    Object.defineProperty(window, 'outerWidth', { value: 1920 });
-                    Object.defineProperty(window, 'outerHeight', { value: 1080 });
-                    Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
-                    Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
-                """
-            }
-        )
+            print(f"selenium-stealth failed (non-fatal): {e}")
     
     def load_page(self, url):
         self.driver.get(url)
@@ -262,9 +360,9 @@ class ChromeBrowserN:
         from selenium.webdriver.support import expected_conditions as EC
 
         try:
-            # Wait for any table row with a token link to appear
+            # Wait for any table row with a link to appear
             WebDriverWait(self.driver, timeout).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "tr a[href*='/token/']"))
+                EC.presence_of_element_located((By.CSS_SELECTOR, "tbody tr a[href]"))
             )
             return True
         except Exception as e:
@@ -290,17 +388,20 @@ class Unlock:
     def check(self):
         browser = ChromeBrowserN(1)
         try:
-            browser.load_page("https://tokenomist.ai/unlocks")
+            browser.load_page("https://tokenomist.ai")
 
             # Wait for the table to load (SPA)
-            if browser.wait_for_table(timeout=30):
+            # Wait for Cloudflare challenge and SPA to fully load
+            time.sleep(10)
+
+            if browser.wait_for_table(timeout=45):
                 print("Table loaded successfully")
             else:
                 print("Table did not load within timeout, proceeding anyway...")
 
             # Scroll to load more content
-            browser.scroll_to_load(scrolls=3, delay=2)
-            time.sleep(3)
+            browser.scroll_to_load(scrolls=5, delay=3)
+            time.sleep(5)
 
             page = browser.get_page()
             projects = get_projects(page, debug=self.debug)
@@ -323,22 +424,38 @@ class Unlock:
             # Filter projects to only those in our currency list
             currency_lower = [c.lower() for c in s.currency]
 
+            now = datetime.now(timezone.utc) + timedelta(hours=3)  # UTC+3 local time
+
             for project in projects:
-                # Extract token symbol from the link or name
                 token_symbol = project[0].split('/')[-1].upper()
                 project_name = project[1].upper()
+                time_left = project[2] if len(project) > 2 else ""
 
                 # Check if this token is in our watchlist
                 if token_symbol.lower() in currency_lower or any(c in project_name for c in s.currency):
-                    browser.load_page("https://tokenomist.ai" + project[0])
-                    time.sleep(5)
-                    page = browser.get_page()
-                    token, dtt = get_date(page, project[1], debug=self.debug)
-                    tokens[token] = dtt
+                    unlock_date = self._countdown_to_date(time_left, now)
+                    tokens[project_name] = unlock_date
 
             self.save_unlocks(tokens)
         finally:
             browser.close()
+
+    def _countdown_to_date(self, countdown, now):
+        """Convert '1D 3H 8M 46S' countdown to '26 Feb 05 03:08 AM' format."""
+        import re
+        days = hours = minutes = seconds = 0
+        for match in re.finditer(r'(\d+)\s*([DHMS])', countdown):
+            val, unit = int(match.group(1)), match.group(2)
+            if unit == 'D':
+                days = val
+            elif unit == 'H':
+                hours = val
+            elif unit == 'M':
+                minutes = val
+            elif unit == 'S':
+                seconds = val
+        unlock_time = now + timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+        return unlock_time.strftime("%d %b %y %I:%M %p")
 
     def save_unlocks(self, tokens):
         with open('token_unlocks.txt', 'w') as file:
