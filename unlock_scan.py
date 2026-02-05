@@ -316,16 +316,10 @@ class ChromeBrowserN:
         options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
         return options
 
-    def __init__(self, num):
-        version = self._detect_chrome_version()
-        if version:
-            print(f"Detected Chrome major version: {version}")
-
-        self.driver = self._create_driver(version, headless=True)
-
-        # Apply optional stealth measures (UC already patches navigator.webdriver)
+    def _apply_stealth(self, driver):
+        """Apply stealth measures. Returns True if driver is still alive."""
         try:
-            self.driver.execute_cdp_cmd(
+            driver.execute_cdp_cmd(
                 "Page.addScriptToEvaluateOnNewDocument",
                 {
                     "source": """
@@ -338,18 +332,36 @@ class ChromeBrowserN:
                 }
             )
         except Exception as e:
-            print(f"CDP injection failed (non-fatal): {e}")
+            print(f"CDP injection failed: {e}")
+            return False
 
         try:
-            stealth(self.driver,
+            stealth(driver,
                     languages=["en-US", "en"],
                     vendor="Google Inc.",
                     platform="Win32",
                     webgl_vendor="Intel Inc.",
                     renderer="Intel Iris OpenGL Engine",
                     fix_hairline=True)
-        except Exception as e:
-            print(f"selenium-stealth failed (non-fatal): {e}")
+        except Exception:
+            pass  # stealth is optional if CDP worked
+        return True
+
+    def __init__(self, num):
+        version = self._detect_chrome_version()
+        if version:
+            print(f"Detected Chrome major version: {version}")
+
+        # Try headless first, fall back to visible if driver session dies
+        self.driver = self._create_driver(version, headless=True)
+        if not self._apply_stealth(self.driver):
+            print("Headless driver died, falling back to visible mode")
+            try:
+                self.driver.quit()
+            except Exception:
+                pass
+            self.driver = self._create_driver(version, headless=False)
+            self._apply_stealth(self.driver)
     
     def load_page(self, url):
         self.driver.get(url)
@@ -385,60 +397,73 @@ class Unlock:
     def __init__(self, debug=False):
         self.debug = debug
 
+    def _try_load_projects(self, browser):
+        """Load tokenomist.ai and extract projects. Returns list or empty list."""
+        browser.load_page("https://tokenomist.ai")
+
+        # Wait for Cloudflare challenge and SPA to fully load
+        time.sleep(10)
+
+        if browser.wait_for_table(timeout=45):
+            print("Table loaded successfully")
+        else:
+            print("Table did not load within timeout, proceeding anyway...")
+
+        # Scroll to load more content
+        browser.scroll_to_load(scrolls=5, delay=3)
+        time.sleep(5)
+
+        page = browser.get_page()
+        return get_projects(page, debug=self.debug), page
+
     def check(self):
-        browser = ChromeBrowserN(1)
-        try:
-            browser.load_page("https://tokenomist.ai")
+        # Retry up to 3 times — Cloudflare challenge may block the first attempt
+        max_attempts = 3
+        projects = []
+        page = ""
 
-            # Wait for the table to load (SPA)
-            # Wait for Cloudflare challenge and SPA to fully load
-            time.sleep(10)
+        for attempt in range(1, max_attempts + 1):
+            browser = ChromeBrowserN(1)
+            try:
+                projects, page = self._try_load_projects(browser)
+                print('Projects: ', projects)
+                if projects:
+                    break
+                print(f"Attempt {attempt}/{max_attempts}: No projects found, retrying...")
+            finally:
+                browser.close()
 
-            if browser.wait_for_table(timeout=45):
-                print("Table loaded successfully")
-            else:
-                print("Table did not load within timeout, proceeding anyway...")
+            if attempt < max_attempts:
+                time.sleep(10)
 
-            # Scroll to load more content
-            browser.scroll_to_load(scrolls=5, delay=3)
-            time.sleep(5)
+        if not projects:
+            print("WARNING: No projects found after all attempts. The website structure may have changed.")
+            with open('debug_unlocks_page.html', 'w', encoding='utf-8') as f:
+                f.write(page)
+            print("Debug HTML saved to debug_unlocks_page.html")
+            with open('token_unlocks.txt', 'w') as f:
+                f.write(f"# No unlock data available - website may have changed structure\n")
+                f.write(f"# Last attempt: {datetime.now().isoformat()}\n")
+            return
 
-            page = browser.get_page()
-            projects = get_projects(page, debug=self.debug)
-            print('Projects: ', projects)
+        tokens = {}
 
-            if not projects:
-                print("WARNING: No projects found. The website structure may have changed.")
-                # Always save HTML for debugging when no projects found
-                with open('debug_unlocks_page.html', 'w', encoding='utf-8') as f:
-                    f.write(page)
-                print("Debug HTML saved to debug_unlocks_page.html")
-                # Write a placeholder file so the action doesn't fail
-                with open('token_unlocks.txt', 'w') as f:
-                    f.write(f"# No unlock data available - website may have changed structure\n")
-                    f.write(f"# Last attempt: {datetime.now().isoformat()}\n")
-                return
+        # Filter projects to only those in our currency list
+        currency_lower = [c.lower() for c in s.currency]
 
-            tokens = {}
+        now = datetime.now(timezone.utc) + timedelta(hours=3)  # UTC+3 local time
 
-            # Filter projects to only those in our currency list
-            currency_lower = [c.lower() for c in s.currency]
+        for project in projects:
+            token_symbol = project[0].split('/')[-1].upper()
+            project_name = project[1].upper()
+            time_left = project[2] if len(project) > 2 else ""
 
-            now = datetime.now(timezone.utc) + timedelta(hours=3)  # UTC+3 local time
+            # Check if this token is in our watchlist
+            if token_symbol.lower() in currency_lower or any(c in project_name for c in s.currency):
+                unlock_date = self._countdown_to_date(time_left, now)
+                tokens[project_name] = unlock_date
 
-            for project in projects:
-                token_symbol = project[0].split('/')[-1].upper()
-                project_name = project[1].upper()
-                time_left = project[2] if len(project) > 2 else ""
-
-                # Check if this token is in our watchlist
-                if token_symbol.lower() in currency_lower or any(c in project_name for c in s.currency):
-                    unlock_date = self._countdown_to_date(time_left, now)
-                    tokens[project_name] = unlock_date
-
-            self.save_unlocks(tokens)
-        finally:
-            browser.close()
+        self.save_unlocks(tokens)
 
     def _countdown_to_date(self, countdown, now):
         """Convert '1D 3H 8M 46S' countdown to '26 Feb 05 03:08 AM' format."""

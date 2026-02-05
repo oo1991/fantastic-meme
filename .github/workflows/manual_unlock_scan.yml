@@ -38,9 +38,10 @@ jobs:
                     requests \
                     undetected-chromedriver \
                     selenium-stealth
+          sudo apt-get update && sudo apt-get install -y xvfb
 
       - name: Run unlock_scan
-        run: python -c "from unlock_scan import unlock_scan; unlock_scan()"
+        run: xvfb-run --auto-servernum python -c "from unlock_scan import unlock_scan; unlock_scan()"
 
       - name: Display content for debugging
         run: cat token_unlocks.txt
