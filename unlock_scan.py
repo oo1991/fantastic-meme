@@ -1,14 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
 from datetime import datetime, timedelta, timezone
-import time
 from settings import s
-import undetected_chromedriver as uc
-from selenium_stealth import stealth
+import nodriver as uc
+import asyncio
 
 def get_projects(html, debug=False):
     soup = BeautifulSoup(html, 'html.parser')
@@ -263,178 +258,105 @@ def save_page(page):
         file.write(page)
 
 class ChromeBrowserN:
-    def _make_options(self):
-        options = uc.ChromeOptions()
-        options.add_argument('--headless=new')
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument("--start-maximized")
-        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
-        return options
+    @classmethod
+    async def create(cls):
+        self = cls()
+        # Always use headless=False — on CI, xvfb provides a virtual display
+        # which avoids headless-mode fingerprinting that Cloudflare detects
+        import shutil
+        kwargs = dict(
+            headless=False,
+            sandbox=False,
+            browser_args=[
+                '--no-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu',
+                '--window-size=1920,1080',
+            ],
+        )
+        # Help nodriver find Chrome on CI where it may not be on default path
+        chrome_path = shutil.which('google-chrome') or shutil.which('chromium-browser')
+        if chrome_path:
+            print(f"Using Chrome at: {chrome_path}")
+            kwargs['browser_executable_path'] = chrome_path
+        self.browser = await uc.start(**kwargs)
+        return self
 
-    def _detect_chrome_version(self):
-        import subprocess, re, platform
+    async def load_page(self, url):
+        self.page = await self.browser.get(url)
+
+    async def wait_for_table(self, timeout=45):
         try:
-            if platform.system() == "Windows":
-                result = subprocess.run(
-                    ["reg", "query", r"HKEY_CURRENT_USER\Software\Google\Chrome\BLBeacon", "/v", "version"],
-                    capture_output=True, text=True
-                )
-                match = re.search(r"(\d+)\.\d+\.\d+\.\d+", result.stdout)
-            else:
-                result = subprocess.run(["google-chrome", "--version"], capture_output=True, text=True)
-                match = re.search(r"(\d+)\.\d+\.\d+\.\d+", result.stdout)
-            if match:
-                return int(match.group(1))
-        except Exception as e:
-            print(f"Could not detect Chrome version: {e}")
-        return None
-
-    def _create_driver(self, version, headless=True):
-        opts = self._make_options() if headless else self._make_options_visible()
-        try:
-            driver = uc.Chrome(options=opts, version_main=version)
-        except Exception as e:
-            print(f"Failed to initialize, trying with use_subprocess: {e}")
-            opts = self._make_options() if headless else self._make_options_visible()
-            driver = uc.Chrome(options=opts, use_subprocess=False, version_main=version)
-        driver.implicitly_wait(10)
-        driver.set_page_load_timeout(60)
-        return driver
-
-    def _make_options_visible(self):
-        options = uc.ChromeOptions()
-        options.add_argument("--disable-blink-features=AutomationControlled")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
-        options.add_argument("--window-size=1920,1080")
-        options.add_argument("--start-maximized")
-        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
-        return options
-
-    def _apply_stealth(self, driver):
-        """Apply stealth measures. Returns True if driver is still alive."""
-        try:
-            driver.execute_cdp_cmd(
-                "Page.addScriptToEvaluateOnNewDocument",
-                {
-                    "source": """
-                        Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-                        Object.defineProperty(window, 'outerWidth', { value: 1920 });
-                        Object.defineProperty(window, 'outerHeight', { value: 1080 });
-                        Object.defineProperty(navigator, 'plugins', { get: () => [1, 2, 3, 4, 5] });
-                        Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
-                    """
-                }
-            )
-        except Exception as e:
-            print(f"CDP injection failed: {e}")
-            return False
-
-        try:
-            stealth(driver,
-                    languages=["en-US", "en"],
-                    vendor="Google Inc.",
-                    platform="Win32",
-                    webgl_vendor="Intel Inc.",
-                    renderer="Intel Iris OpenGL Engine",
-                    fix_hairline=True)
-        except Exception:
-            pass  # stealth is optional if CDP worked
-        return True
-
-    def __init__(self, num):
-        version = self._detect_chrome_version()
-        if version:
-            print(f"Detected Chrome major version: {version}")
-
-        # Try headless first, fall back to visible if driver session dies
-        self.driver = self._create_driver(version, headless=True)
-        if not self._apply_stealth(self.driver):
-            print("Headless driver died, falling back to visible mode")
-            try:
-                self.driver.quit()
-            except Exception:
-                pass
-            self.driver = self._create_driver(version, headless=False)
-            self._apply_stealth(self.driver)
-    
-    def load_page(self, url):
-        self.driver.get(url)
-
-    def wait_for_table(self, timeout=30):
-        """Wait for the table to load by checking for tr elements with links"""
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-
-        try:
-            # Wait for any table row with a link to appear
-            WebDriverWait(self.driver, timeout).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "tbody tr a[href]"))
-            )
+            await self.page.select('tbody tr a', timeout=timeout)
             return True
-        except Exception as e:
-            print(f"Timeout waiting for table: {e}")
+        except Exception:
             return False
 
-    def scroll_to_load(self, scrolls=3, delay=2):
-        """Scroll down to trigger lazy loading"""
-        for i in range(scrolls):
-            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(delay)
+    async def scroll_to_load(self, scrolls=5, delay=3):
+        for _ in range(scrolls):
+            await self.page.scroll_down(50)
+            await self.page.sleep(delay)
 
-    def get_page(self):
-        return self.driver.page_source
+    async def get_page(self):
+        return await self.page.get_content()
 
     def close(self):
-        self.driver.quit()
+        self.browser.stop()
 
 class Unlock:
     def __init__(self, debug=False):
         self.debug = debug
 
-    def _try_load_projects(self, browser):
+    async def _try_load_projects(self, browser):
         """Load tokenomist.ai and extract projects. Returns list or empty list."""
-        browser.load_page("https://tokenomist.ai")
+        await browser.load_page("https://tokenomist.ai")
 
-        # Wait for Cloudflare challenge and SPA to fully load
-        time.sleep(10)
+        # Wait for Cloudflare challenge to resolve
+        await asyncio.sleep(5)
+        try:
+            await browser.page.verify_cf()
+            print("Cloudflare challenge handled")
+        except Exception as e:
+            print(f"Cloudflare verify skipped: {e}")
 
-        if browser.wait_for_table(timeout=45):
+        await asyncio.sleep(5)
+
+        if await browser.wait_for_table(timeout=45):
             print("Table loaded successfully")
         else:
             print("Table did not load within timeout, proceeding anyway...")
 
         # Scroll to load more content
-        browser.scroll_to_load(scrolls=5, delay=3)
-        time.sleep(5)
+        await browser.scroll_to_load(scrolls=5, delay=3)
+        await asyncio.sleep(5)
 
-        page = browser.get_page()
+        page = await browser.get_page()
         return get_projects(page, debug=self.debug), page
 
-    def check(self):
+    async def check(self):
         # Retry up to 3 times — Cloudflare challenge may block the first attempt
         max_attempts = 3
         projects = []
         page = ""
 
         for attempt in range(1, max_attempts + 1):
-            browser = ChromeBrowserN(1)
+            print(f"Attempt {attempt}/{max_attempts}")
+            browser = None
             try:
-                projects, page = self._try_load_projects(browser)
+                browser = await ChromeBrowserN.create()
+                projects, page = await self._try_load_projects(browser)
                 print('Projects: ', projects)
                 if projects:
                     break
                 print(f"Attempt {attempt}/{max_attempts}: No projects found, retrying...")
+            except Exception as e:
+                print(f"Attempt {attempt}/{max_attempts} failed: {e}")
             finally:
-                browser.close()
+                if browser:
+                    browser.close()
 
             if attempt < max_attempts:
-                time.sleep(10)
+                await asyncio.sleep(10)
 
         if not projects:
             print("WARNING: No projects found after all attempts. The website structure may have changed.")
@@ -488,7 +410,7 @@ class Unlock:
                 file.write(f"{token}: {unlock_time}\n")
 
 def unlock_scan(debug=False):
-    Unlock(debug=debug).check()
+    uc.loop().run_until_complete(Unlock(debug=debug).check())
 
 if __name__ == "__main__":
     import sys
