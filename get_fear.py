@@ -348,8 +348,7 @@ def save_fear_and_greed_indices():
         if cbbi_index:
             file.write(f"CBBI Index: {cbbi_index}\n")
         else:
-            file.write("CBBI Index: Error fetching data\n")
-            error = True
+            file.write("CBBI Index: Error fetching data (non-fatal)\n")
 
         if usdt_cap:
             file.write(f"USDT Cap: {usdt_cap}\n")
