@@ -210,47 +210,31 @@ def get_fear_and_greed_index_cryptorank():
         return None
 
 def get_cbbi_index():
-    webdriver, By, ChromeService, WebDriverWait, EC, ChromeDriverManager = _selenium()
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--window-size=1920,1080')
-
-    driver = None
     try:
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-        driver.set_page_load_timeout(60)
-        
-        url = "https://colintalkscrypto.com/cbbi/"
-        driver.get(url)
-        
-        driver.implicitly_wait(10)
-    
-        time.sleep(5)
-    
-        page = driver.page_source
-    
-        BeautifulSoup = _bs4()
-        soup = BeautifulSoup(page, 'html.parser')
-        
-        # Find the <h1> tag with the given classes
-        score_tag = soup.find('h1', class_='title confidence-score-value')
-        if score_tag:
-            print('CBBI Index: ', score_tag.get_text(strip=True))
-            return score_tag.get_text(strip=True)
-        else:
-            print("Could not find the CBBI index on the page.")
+        resp = requests.get(
+            "https://colintalkscrypto.com/cbbi/data/latest.json",
+            timeout=15,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/126.0 Safari/537.36"
+                )
+            },
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        confidence = data.get("Confidence", {})
+        if not confidence:
+            print("CBBI API returned no Confidence data.")
             return ""
+        latest_ts = max(confidence.keys(), key=int)
+        score = round(confidence[latest_ts] * 100)
+        print(f"CBBI Index: {score}%")
+        return f"{score}%"
     except Exception as e:
         print(f"Error fetching CBBI Index: {e}")
         return ""
-    finally:
-        if driver:
-            try:
-                driver.quit()
-            except Exception:
-                pass
 
 def get_usdt_cap():
     webdriver, By, ChromeService, WebDriverWait, EC, ChromeDriverManager = _selenium()
@@ -348,7 +332,8 @@ def save_fear_and_greed_indices():
         if cbbi_index:
             file.write(f"CBBI Index: {cbbi_index}\n")
         else:
-            file.write("CBBI Index: Error fetching data (non-fatal)\n")
+            file.write("CBBI Index: Error fetching data\n")
+            error = True
 
         if usdt_cap:
             file.write(f"USDT Cap: {usdt_cap}\n")
