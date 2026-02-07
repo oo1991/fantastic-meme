@@ -119,64 +119,35 @@ def get_rainbow():
     output_file = "rainbow.txt"
     extract_active_spans(url, output_file)
 
-def get_fear_and_greed_index_from_page(html_content):
-    """
-    Extract the Fear and Greed index from the given HTML content.
-    """
-    BeautifulSoup = _bs4()
-    soup = BeautifulSoup(html_content, 'html.parser')
-
-    try:
-        # Find the div containing the Fear and Greed index score
-        fng_element = soup.find("div", class_="FearAndGreedCard_score__8bXjA")
-        if fng_element:
-            fng_index = fng_element.text.strip()
-            return fng_index
-        else:
-            raise ValueError("Fear and Greed index element not found")
-    except Exception as e:
-        print(f"Error extracting Fear and Greed index: {e}")
-        return None
-
 def get_fear_and_greed_index_coinmarketcap():
     """
-    Load the CoinMarketCap webpage and extract the Fear and Greed index.
+    Fetch the Fear & Greed index value and classification via the
+    Alternative.me public API (same underlying index as CoinMarketCap).
     """
-    webdriver, By, ChromeService, WebDriverWait, EC, ChromeDriverManager = _selenium()
-    options = webdriver.ChromeOptions()
-    options.add_argument('--headless')  # Run browser in headless mode
-    options.add_argument('--disable-gpu')  # Disable GPU acceleration
-    options.add_argument('--no-sandbox')  # Bypass OS security model
-    options.add_argument('--window-size=1920,1080')  # Set window size
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-    driver.implicitly_wait(20)
-    
-    url = "https://coinmarketcap.com/"
-    driver.get(url)
-
     try:
-        # Wait until the page has fully loaded by waiting for a significant element
-        WebDriverWait(driver, 20).until(
-            EC.presence_of_element_located((By.TAG_NAME, "body"))  # Adjust this to a reliable element
+        resp = requests.get(
+            "https://api.alternative.me/fng/?limit=1&format=json",
+            timeout=10,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/126.0 Safari/537.36"
+                )
+            },
         )
-
-        # Allow some extra time for JavaScript-rendered content to load
-        time.sleep(5)
-
-        # Get the full page source after waiting for the element
-        html_content = driver.page_source
-        
-        # Print a portion of the page content for debugging
-        #print(html_content)  # Prints the first 5000 characters of the page content
-        
-        # Use the previously defined function to extract the Fear and Greed index from the page source
-        fng_index = get_fear_and_greed_index_from_page(html_content)
-        return fng_index
-    except Exception as e:
-        logging.error(f"Error fetching Fear and Greed index from CoinMarketCap: {e}")
+        resp.raise_for_status()
+        data = resp.json()
+        if isinstance(data, dict) and "data" in data and data["data"]:
+            entry = data["data"][0]
+            value = entry.get("value", "").strip()
+            classification = entry.get("value_classification", "").strip()
+            if value:
+                return f"{value} ({classification})" if classification else value
         return None
-    finally:
-        driver.quit()
+    except Exception as e:
+        print(f"Error fetching Fear & Greed index (CoinMarketCap): {e}")
+        return None
 
 def get_fear_and_greed_index_cryptorank():
     """
