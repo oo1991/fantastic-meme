@@ -124,30 +124,33 @@ def get_fear_and_greed_index_coinmarketcap():
     Fetch the Fear & Greed index value and classification via the
     Alternative.me public API (same underlying index as CoinMarketCap).
     """
-    try:
-        resp = requests.get(
-            "https://api.alternative.me/fng/?limit=1&format=json",
-            timeout=10,
-            headers={
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/126.0 Safari/537.36"
-                )
-            },
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        if isinstance(data, dict) and "data" in data and data["data"]:
-            entry = data["data"][0]
-            value = entry.get("value", "").strip()
-            classification = entry.get("value_classification", "").strip()
-            if value:
-                return f"{value} ({classification})" if classification else value
-        return None
-    except Exception as e:
-        print(f"Error fetching Fear & Greed index (CoinMarketCap): {e}")
-        return None
+    for attempt in range(3):
+        try:
+            resp = requests.get(
+                "https://api.alternative.me/fng/?limit=1&format=json",
+                timeout=10,
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/126.0 Safari/537.36"
+                    )
+                },
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if isinstance(data, dict) and "data" in data and data["data"]:
+                entry = data["data"][0]
+                value = entry.get("value", "").strip()
+                classification = entry.get("value_classification", "").strip()
+                if value:
+                    return f"{value} ({classification})" if classification else value
+            return None
+        except Exception as e:
+            print(f"Error fetching Fear & Greed index (CoinMarketCap), attempt {attempt + 1}/3: {e}")
+            if attempt < 2:
+                time.sleep(5)
+    return None
 
 def get_fear_and_greed_index_cryptorank():
     """
@@ -155,30 +158,33 @@ def get_fear_and_greed_index_cryptorank():
     scraping CryptoRank's frequently-changing DOM. Keeps the
     existing label in the report while providing reliable data.
     """
-    try:
-        # Alternative.me provides a public Fear & Greed API
-        # Docs: https://api.alternative.me/fng/
-        resp = requests.get(
-            "https://api.alternative.me/fng/?limit=1&format=json",
-            timeout=10,
-            headers={
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/126.0 Safari/537.36"
-                )
-            },
-        )
-        resp.raise_for_status()
-        data = resp.json()
-        if isinstance(data, dict) and "data" in data and data["data"]:
-            value = data["data"][0].get("value")
-            if value:
-                return value.strip()
-        return None
-    except Exception as e:
-        print(f"Error fetching Fear & Greed index (API fallback): {e}")
-        return None
+    for attempt in range(3):
+        try:
+            # Alternative.me provides a public Fear & Greed API
+            # Docs: https://api.alternative.me/fng/
+            resp = requests.get(
+                "https://api.alternative.me/fng/?limit=1&format=json",
+                timeout=10,
+                headers={
+                    "User-Agent": (
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                        "AppleWebKit/537.36 (KHTML, like Gecko) "
+                        "Chrome/126.0 Safari/537.36"
+                    )
+                },
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            if isinstance(data, dict) and "data" in data and data["data"]:
+                value = data["data"][0].get("value")
+                if value:
+                    return value.strip()
+            return None
+        except Exception as e:
+            print(f"Error fetching Fear & Greed index (API fallback), attempt {attempt + 1}/3: {e}")
+            if attempt < 2:
+                time.sleep(5)
+    return None
 
 def get_cbbi_index():
     try:
@@ -285,14 +291,12 @@ def save_fear_and_greed_indices():
         if coinmarketcap_index:
             file.write(f"CoinMarketCap Fear & Greed Index: {coinmarketcap_index}\n")
         else:
-            file.write("CoinMarketCap Fear & Greed Index: Error fetching data\n")
-            error = True
+            file.write("CoinMarketCap Fear & Greed Index: Error fetching data (non-fatal)\n")
 
         if cryptorank_index:
             file.write(f"CryptoRank Fear & Greed Index: {cryptorank_index}\n")
         else:
-            file.write("CryptoRank Fear & Greed Index: Error fetching data\n")
-            error = True
+            file.write("CryptoRank Fear & Greed Index: Error fetching data (non-fatal)\n")
         
         if "An error occurred" not in altcoin_index:
             file.write(f"Altcoin Season Index: {altcoin_index}\n")
