@@ -1,1 +1,1 @@
-BUY!
+The target <div> with class 'legend mt-2' was not found.
