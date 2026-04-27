@@ -11,14 +11,14 @@ PEP CAP: $212.48B, Volume (last 24h): $5.36M
 KO CAP: $329.83B, Volume (last 24h): $12.00M
 ADBE CAP: $99.21B, Volume (last 24h): $6.49M
 MCD CAP: $212.79B, Volume (last 24h): $3.85M
-NFLX CAP: $389.25B, Volume (last 24h): $32.47M
+NFLX CAP: $388.89B, Volume (last 24h): $32.47M
 ORCL CAP: $498.36B, Volume (last 24h): $33.16M
-INTC CAP: $414.85B, Volume (last 24h): $280.51M
+INTC CAP: $415.00B, Volume (last 24h): $280.51M
 NKE CAP: $66.18B, Volume (last 24h): $15.86M
 QCOM CAP: $158.98B, Volume (last 24h): $29.41M
 SBUX CAP: $112.41B, Volume (last 24h): $6.09M
 BLK CAP: $162.35B, Volume (last 24h): $365900.00
-DPZ CAP: $12.37B, Volume (last 24h): $1.38M
+DPZ CAP: $12.38B, Volume (last 24h): $1.38M
 UBER CAP: $153.62B, Volume (last 24h): $13.00M
 MARA CAP: $4.43B, Volume (last 24h): $46.64M
 RIOT CAP: $7.06B, Volume (last 24h): $20.80M
