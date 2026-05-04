@@ -1,7 +1,7 @@
 TSLA CAP: $1.47T, Volume (last 24h): $65.21M
 AAPL CAP: $4.11T, Volume (last 24h): $79.84M
 MSFT CAP: $3.08T, Volume (last 24h): $31.33M
-AMZN CAP: $2.88T, Volume (last 24h): $50.78M
+AMZN CAP: $2.89T, Volume (last 24h): $50.78M
 NVDA CAP: $4.82T, Volume (last 24h): $128.26M
 GOOGL CAP: $4.67T, Volume (last 24h): $30.08M
 META CAP: $1.55T, Volume (last 24h): $21.36M
@@ -13,9 +13,9 @@ ADBE CAP: $101.34B, Volume (last 24h): $5.06M
 MCD CAP: $203.75B, Volume (last 24h): $3.75M
 NFLX CAP: $387.65B, Volume (last 24h): $30.32M
 ORCL CAP: $494.19B, Volume (last 24h): $26.28M
-INTC CAP: $500.69B, Volume (last 24h): $157.43M
+INTC CAP: $500.64B, Volume (last 24h): $157.43M
 NKE CAP: $65.75B, Volume (last 24h): $11.53M
-QCOM CAP: $186.57B, Volume (last 24h): $21.09M
+QCOM CAP: $186.59B, Volume (last 24h): $21.09M
 SBUX CAP: $120.69B, Volume (last 24h): $6.36M
 BLK CAP: $164.95B, Volume (last 24h): $470300.00
 DPZ CAP: $11.23B, Volume (last 24h): $691000.00
