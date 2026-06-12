@@ -1,6 +1,6 @@
-Scan Time: 2026-06-11T08:45:04.326638Z
+Scan Time: 2026-06-12T08:23:35.801716Z
 CoinMarketCap Fear & Greed Index: 12 (Extreme Fear)
 CryptoRank Fear & Greed Index: 12
 Altcoin Season Index: Could not find the Altcoin Season Index on the page. The structure of the page might have changed.
 CBBI Index: 28%
-USDT Cap: $186,848,134,244.18
+USDT Cap: $186,821,710,053.86
