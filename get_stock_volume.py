@@ -49,15 +49,19 @@ class StockMarketCup:
     def check(self):
         ticker_string = ' '.join(stocks)
         data = yf.Tickers(ticker_string)
-        
+
         with open("stock_volumes.txt", "w") as f:
             for ticker in stocks:
-                marketcap = self.format_market_cap(data.tickers[ticker].info['marketCap'])
-                volume_last_24h = self.format_market_cap(data.tickers[ticker].history(period="1d")['Volume'].iloc[-1])
-                output = f"{ticker} CAP: {marketcap}, Volume (last 24h): {volume_last_24h}"
-                
-                print(output)
-                f.write(output + "\n")
+                try:
+                    marketcap = self.format_market_cap(data.tickers[ticker].info['marketCap'])
+                    volume_last_24h = self.format_market_cap(data.tickers[ticker].history(period="1d")['Volume'].iloc[-1])
+                    output = f"{ticker} CAP: {marketcap}, Volume (last 24h): {volume_last_24h}"
+
+                    print(output)
+                    f.write(output + "\n")
+                except Exception as e:
+                    print(f"Error fetching data for {ticker} (non-fatal): {e}")
+                    f.write(f"{ticker}: Error fetching data (non-fatal)\n")
 
 def scan_stock_volumes():
     StockMarketCup().check()
