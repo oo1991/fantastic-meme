@@ -30,94 +30,127 @@ import logging
 import time
 import sys
 
-def extract_active_spans(url: str, output_file: str) -> None:
+# Valid rainbow-band labels (the 2023 Bitcoin Rainbow Chart). Used to reject
+# any unexpected text so scraper junk never reaches the output file.
+RAINBOW_BANDS = {
+    "Maximum Bubble Territory",
+    "Sell. Seriously, SELL!",
+    "FOMO intensifies",
+    "Is this a bubble?",
+    "HODL!",
+    "Still cheap",
+    "Accumulate",
+    "BUY!",
+    "Basically a Fire Sale",
+}
+
+# JS run in the rendered page: for every rainbow chart on the page, return its
+# nearest preceding heading text plus the currently-highlighted band label.
+# blockchaincenter.net now ships a client-rendered React app where each chart is
+# a `.rainbow-container` and the active band is `.rainbow-legend-item.active`.
+_RAINBOW_PROBE_JS = r"""
+const out = [];
+for (const c of document.querySelectorAll('div.rainbow-container')) {
+  // Walk up/back to find the nearest heading describing this chart.
+  let heading = '';
+  let el = c;
+  outer:
+  while (el) {
+    let p = el.previousElementSibling;
+    while (p) {
+      if (p.matches && p.matches('h1,h2,h3')) { heading = p.innerText; break outer; }
+      const hd = p.querySelector && p.querySelector('h1,h2,h3');
+      if (hd) { heading = hd.innerText; break outer; }
+      p = p.previousElementSibling;
+    }
+    el = el.parentElement;
+  }
+  const active = c.querySelector('div.rainbow-legend-item.active');
+  out.push({ heading: (heading || '').trim(), band: active ? active.innerText.trim() : '' });
+}
+return out;
+"""
+
+
+def _pick_rainbow_band(charts):
+    """Choose the band from the modern 'Bitcoin Rainbow Chart'.
+
+    The page now renders two charts: 'The Original Chart' (a legacy regression
+    whose active band sits at the degenerate 'Bitcoin is dead' extreme) and 'The
+    2023 Bitcoin Rainbow Chart' (the canonical one). Prefer the latter; among
+    several, prefer the highest year in the heading.
     """
-    Fetches the webpage at the specified URL, extracts <span> elements with the class 'active'
-    within the <div> that has classes 'legend' and 'mt-2', prints their text content, and
-    saves the results or any error messages to the specified output file.
+    import re
 
-    Parameters:
-    - url (str): The URL of the webpage to fetch.
-    - output_file (str): The path to the file where results or error messages will be saved.
-    """
-    try:
-        # Optional: Define headers to mimic a real browser
-        headers = {
-            'User-Agent': (
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                'AppleWebKit/537.36 (KHTML, like Gecko) '
-                'Chrome/58.0.3029.110 Safari/537.3'
-            )
-        }
+    def year(h):
+        m = re.search(r'(20\d{2})', h or '')
+        return int(m.group(1)) if m else -1
 
-        # Send a GET request to the URL with headers
-        response = requests.get(url, headers=headers, timeout=10)  # Added timeout for better handling
+    # 1) Headings that mention "rainbow chart", with a recognised band.
+    named = [c for c in charts
+             if 'rainbow chart' in (c['heading'] or '').lower()
+             and c['band'] in RAINBOW_BANDS]
+    if named:
+        return max(named, key=lambda c: year(c['heading']))['band']
 
-        # Raise an exception if the request was unsuccessful
-        response.raise_for_status()
+    # 2) Any chart with a recognised band (skips the 'Bitcoin is dead' original).
+    valid = [c for c in charts if c['band'] in RAINBOW_BANDS]
+    if valid:
+        return max(valid, key=lambda c: year(c['heading']))['band']
 
-        # Parse the HTML content using BeautifulSoup
-        BeautifulSoup = _bs4()
-        soup = BeautifulSoup(response.text, 'html.parser')
+    return None
 
-        # Find the <div> with classes "legend" and "mt-2"
-        target_div = soup.find('div', class_='legend mt-2')
-
-        if not target_div:
-            error_message = "The target <div> with class 'legend mt-2' was not found."
-            # Write the error message to the output file
-            with open(output_file, 'w', encoding='utf-8') as f:
-                f.write(error_message)
-            print(error_message)  # Optional: Also print the error to console
-            return  # Exit the function early
-
-        # Find all <span> elements with class "active" within the target <div>
-        active_spans = target_div.find_all('span', class_='active')
-
-        if not active_spans:
-            error_message = "No <span> elements with class 'active' were found within the target <div>."
-            # Write the error message to the output file
-            with open(output_file, 'w', encoding='utf-8') as f:
-                f.write(error_message)
-            print(error_message)  # Optional: Also print the error to console
-            return  # Exit the function early
-
-        # Open the file in write mode to save the results
-        with open(output_file, 'w', encoding='utf-8') as f:
-            # Iterate through each active <span> and write its text content to the file
-            for span in active_spans:
-                span_text = span.get_text(strip=True)
-                print(span_text)  # Print to console
-                f.write(span_text + '\n')  # Write to file
-
-    except requests.exceptions.HTTPError as http_err:
-        error_message = f"HTTP error occurred: {http_err}"
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(error_message)
-        print(error_message)  # Optional: Also print the error to console
-
-    except requests.exceptions.ConnectionError as conn_err:
-        error_message = f"Connection error occurred: {conn_err}"
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(error_message)
-        print(error_message)  # Optional: Also print the error to console
-
-    except requests.exceptions.Timeout as timeout_err:
-        error_message = f"Timeout error occurred: {timeout_err}"
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(error_message)
-        print(error_message)  # Optional: Also print the error to console
-
-    except requests.exceptions.RequestException as req_err:
-        error_message = f"An error occurred: {req_err}"
-        with open(output_file, 'w', encoding='utf-8') as f:
-            f.write(error_message)
-        print(error_message)  # Optional: Also print the error to console
 
 def get_rainbow():
     url = "https://www.blockchaincenter.net/en/bitcoin-rainbow-chart/"
     output_file = "rainbow.txt"
-    extract_active_spans(url, output_file)
+
+    webdriver, By, ChromeService, WebDriverWait, EC, ChromeDriverManager = _selenium()
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--window-size=1920,1080')
+
+    driver = None
+    try:
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        driver.set_page_load_timeout(60)
+        driver.get(url)
+
+        # The chart is client-rendered; wait for at least one legend to appear.
+        try:
+            WebDriverWait(driver, 30).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'div.rainbow-legend-item.active'))
+            )
+        except Exception:
+            pass  # fall through; the probe below will report if nothing rendered
+        time.sleep(2)
+
+        charts = driver.execute_script(_RAINBOW_PROBE_JS) or []
+        band = _pick_rainbow_band(charts)
+
+        if band:
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(band + '\n')
+            print(f"Bitcoin Rainbow Chart band: {band}")
+        else:
+            error_message = "Could not determine the Bitcoin Rainbow Chart band (page structure may have changed)."
+            with open(output_file, 'w', encoding='utf-8') as f:
+                f.write(error_message)
+            print(error_message)
+            print(f"Probed charts: {charts}")
+    except Exception as e:
+        error_message = f"An error occurred while fetching the Bitcoin Rainbow Chart: {e}"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(error_message)
+        print(error_message)
+    finally:
+        if driver:
+            try:
+                driver.quit()
+            except Exception:
+                pass
 
 def get_fear_and_greed_index_coinmarketcap():
     """
