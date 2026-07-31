@@ -1,29 +1,29 @@
-TSLA CAP: $1.18T, Volume (last 24h): $39.21M
-AAPL CAP: $4.97T, Volume (last 24h): $55.93M
-MSFT CAP: $2.90T, Volume (last 24h): $44.96M
-AMZN CAP: $2.44T, Volume (last 24h): $44.23M
-NVDA CAP: $4.60T, Volume (last 24h): $146.96M
-GOOGL CAP: $4.12T, Volume (last 24h): $27.29M
-META CAP: $1.49T, Volume (last 24h): $21.68M
-V CAP: $677.39B, Volume (last 24h): $11.29M
-MA CAP: $497.74B, Volume (last 24h): $3.52M
-PEP CAP: $196.02B, Volume (last 24h): $8.39M
-KO CAP: $383.31B, Volume (last 24h): $21.68M
-ADBE CAP: $104.71B, Volume (last 24h): $9.86M
-MCD CAP: $192.92B, Volume (last 24h): $3.65M
-NFLX CAP: $306.59B, Volume (last 24h): $43.63M
-ORCL CAP: $339.15B, Volume (last 24h): $27.84M
-INTC CAP: $413.00B, Volume (last 24h): $151.19M
-NKE CAP: $64.12B, Volume (last 24h): $15.01M
-QCOM CAP: $164.09B, Volume (last 24h): $18.97M
-SBUX CAP: $118.69B, Volume (last 24h): $12.48M
-BLK CAP: $175.48B, Volume (last 24h): $1.12M
-DPZ CAP: $11.91B, Volume (last 24h): $1.29M
-UBER CAP: $144.93B, Volume (last 24h): $12.03M
-MARA CAP: $3.83B, Volume (last 24h): $43.56M
-RIOT CAP: $6.90B, Volume (last 24h): $23.19M
-COIN CAP: $42.18B, Volume (last 24h): $6.77M
-MSTR CAP: $34.10B, Volume (last 24h): $14.10M
+TSLA CAP: $1.22T, Volume (last 24h): $37.85M
+AAPL CAP: $4.90T, Volume (last 24h): $73.36M
+MSFT CAP: $3.35T, Volume (last 24h): $109.98M
+AMZN CAP: $2.53T, Volume (last 24h): $100.88M
+NVDA CAP: $4.72T, Volume (last 24h): $128.44M
+GOOGL CAP: $4.08T, Volume (last 24h): $30.05M
+META CAP: $1.37T, Volume (last 24h): $42.16M
+V CAP: $683.84B, Volume (last 24h): $8.39M
+MA: Error fetching data (non-fatal)
+PEP CAP: $191.51B, Volume (last 24h): $8.25M
+KO CAP: $380.73B, Volume (last 24h): $17.62M
+ADBE CAP: $98.54B, Volume (last 24h): $6.87M
+MCD: Error fetching data (non-fatal)
+NFLX CAP: $304.68B, Volume (last 24h): $54.12M
+ORCL CAP: $367.43B, Volume (last 24h): $41.09M
+INTC CAP: $459.66B, Volume (last 24h): $138.82M
+NKE CAP: $62.74B, Volume (last 24h): $16.95M
+QCOM CAP: $159.18B, Volume (last 24h): $24.30M
+SBUX CAP: $120.67B, Volume (last 24h): $23.41M
+BLK: Error fetching data (non-fatal)
+DPZ CAP: $11.65B, Volume (last 24h): $835000.00
+UBER CAP: $143.25B, Volume (last 24h): $14.16M
+MARA CAP: $4.51B, Volume (last 24h): $45.33M
+RIOT CAP: $8.36B, Volume (last 24h): $25.67M
+COIN CAP: $43.10B, Volume (last 24h): $7.76M
+MSTR CAP: $35.71B, Volume (last 24h): $13.38M
 BITF: Error fetching data (non-fatal)
-CORZ CAP: $5.82B, Volume (last 24h): $35.49M
-CLSK CAP: $3.08B, Volume (last 24h): $24.82M
+CORZ CAP: $7.01B, Volume (last 24h): $22.58M
+CLSK CAP: $3.73B, Volume (last 24h): $30.50M
