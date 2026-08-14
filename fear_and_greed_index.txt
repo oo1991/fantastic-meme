@@ -1,4 +1,4 @@
-Scan Time: 2026-08-13T05:37:58.353319Z
+Scan Time: 2026-08-14T05:36:05.442075Z
 CoinMarketCap Fear & Greed Index: 29 (Fear)
 CryptoRank Fear & Greed Index: 29
 Altcoin Season Index: Could not find the Altcoin Season Index on the page. The structure of the page might have changed.
