@@ -9,7 +9,7 @@ V CAP: $677.09B, Volume (last 24h): $4.01M
 MA CAP: $483.79B, Volume (last 24h): $2.45M
 PEP CAP: $171.97B, Volume (last 24h): $6.09M
 KO CAP: $368.51B, Volume (last 24h): $20.28M
-ADBE CAP: $94.48B, Volume (last 24h): $3.11M
+ADBE CAP: $92.51B, Volume (last 24h): $3.11M
 MCD CAP: $164.10B, Volume (last 24h): $6.43M
 NFLX CAP: $279.23B, Volume (last 24h): $38.60M
 ORCL CAP: $431.38B, Volume (last 24h): $35.33M
