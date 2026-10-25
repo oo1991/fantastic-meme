@@ -23,7 +23,7 @@ UBER CAP: $136.24B, Volume (last 24h): $18.74M
 MARA CAP: $2.71B, Volume (last 24h): $33.77M
 RIOT CAP: $4.70B, Volume (last 24h): $14.70M
 COIN CAP: $43.39B, Volume (last 24h): $6.55M
-MSTR CAP: $61.83B, Volume (last 24h): $18.45M
+MSTR CAP: $61.85B, Volume (last 24h): $18.45M
 BITF: Error fetching data (non-fatal)
 CORZ CAP: $4.21B, Volume (last 24h): $12.73M
 CLSK CAP: $2.02B, Volume (last 24h): $16.88M
