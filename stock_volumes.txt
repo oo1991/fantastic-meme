@@ -16,7 +16,7 @@ ORCL CAP: $396.13B, Volume (last 24h): $40.98M
 INTC CAP: $349.51B, Volume (last 24h): $454.22M
 NKE CAP: $57.44B, Volume (last 24h): $26.97M
 QCOM CAP: $175.97B, Volume (last 24h): $24.09M
-SBUX CAP: $118.19B, Volume (last 24h): $14.22M
+SBUX CAP: $118.17B, Volume (last 24h): $14.22M
 BLK CAP: $186.45B, Volume (last 24h): $644700.00
 DPZ CAP: $10.32B, Volume (last 24h): $750200.00
 UBER CAP: $133.28B, Volume (last 24h): $17.93M
