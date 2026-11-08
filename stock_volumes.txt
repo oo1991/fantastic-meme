@@ -5,12 +5,12 @@ AMZN CAP: $2.80T, Volume (last 24h): $42.50M
 NVDA CAP: $4.51T, Volume (last 24h): $179.72M
 GOOGL CAP: $3.50T, Volume (last 24h): $36.28M
 META CAP: $1.56T, Volume (last 24h): $15.68M
-V CAP: $789.94B, Volume (last 24h): $9.22M
+V CAP: $788.58B, Volume (last 24h): $9.22M
 MA CAP: $568.62B, Volume (last 24h): $3.29M
 PEP CAP: $192.61B, Volume (last 24h): $8.71M
 KO CAP: $411.56B, Volume (last 24h): $18.42M
 ADBE CAP: $93.14B, Volume (last 24h): $3.30M
-MCD CAP: $195.68B, Volume (last 24h): $6.33M
+MCD CAP: $195.16B, Volume (last 24h): $6.33M
 NFLX CAP: $260.38B, Volume (last 24h): $35.47M
 ORCL CAP: $361.97B, Volume (last 24h): $47.50M
 INTC CAP: $299.13B, Volume (last 24h): $173.77M
@@ -25,5 +25,5 @@ RIOT CAP: $6.27B, Volume (last 24h): $44.99M
 COIN CAP: $35.68B, Volume (last 24h): $7.56M
 MSTR CAP: $54.57B, Volume (last 24h): $13.82M
 BITF: Error fetching data (non-fatal)
-CORZ CAP: $3.78B, Volume (last 24h): $29.75M
+CORZ CAP: $3.79B, Volume (last 24h): $29.75M
 CLSK CAP: $1.58B, Volume (last 24h): $23.54M
