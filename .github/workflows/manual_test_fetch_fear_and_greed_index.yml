@@ -32,10 +32,14 @@ jobs:
         curl -X POST -H 'Content-type: application/json' \
         --data '{"text":"❌ Error: Not all Fear & Greed data was fetched. Check the workflow logs."}' ${{ secrets.SLACK_FEAR }}
 
+    # always(): a failed side field (CBBI, USDT cap) must not throw away the
+    # Fear & Greed value the script already wrote; Slack above still reports it.
     - name: Display content for debugging
+      if: always()
       run: cat fear_and_greed_index.txt
 
     - name: Commit and push changes
+      if: always()
       env:
         GH_PAT: ${{ secrets.GH_PAT }}
       run: |

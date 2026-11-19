@@ -334,8 +334,10 @@ def save_fear_and_greed_indices():
         if "An error occurred" not in altcoin_index:
             file.write(f"Altcoin Season Index: {altcoin_index}\n")
         else:
-            file.write("Altcoin Season Index: Error fetching data\n")
-            error = True
+            # Non-fatal: blockchaincenter.net is flaky (2026-11-18 a failed
+            # request here made the run exit 1 and the F&G value was never
+            # committed). The index values matter; this side field does not.
+            file.write("Altcoin Season Index: Error fetching data (non-fatal)\n")
 
         if cbbi_index:
             file.write(f"CBBI Index: {cbbi_index}\n")
